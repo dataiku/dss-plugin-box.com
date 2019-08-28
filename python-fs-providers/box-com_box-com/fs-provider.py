@@ -39,7 +39,7 @@ class BoxComFSProvider(FSProvider):
         return '/' + '/'.join(elts)
     def get_full_path(self, path):
         lnt_path = self.get_lnt_path(path)
-        rel_path = self.get_rel_path(path)
+        
         if lnt_path == '/':
             return self.root_lnt
         else:
@@ -57,7 +57,7 @@ class BoxComFSProvider(FSProvider):
         if the object doesn't exist
         """
         full_path = self.get_full_path(path)
-        path_lnt = self.get_lnt_path(path)
+        
         item_id, item_type = self.get_box_item(full_path)
 
         if item_id is None:
@@ -119,8 +119,6 @@ class BoxComFSProvider(FSProvider):
             children = []
             folder_id = item_id
             for sub in self.client.folder(folder_id=folder_id).get_items():
-                print('sub:{0}'.format(sub))
-                sub_full_path = os.path.join(full_path, sub.name)
                 sub_path = self.get_lnt_path(os.path.join(full_path, sub.name))
                 child_details = self.get_box_item_details(sub.id, sub.type)
                 children.append({'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == "folder", 'size' : child_details.size})
@@ -183,8 +181,31 @@ class BoxComFSProvider(FSProvider):
         """
         Delete recursively from path. Return the number of deleted files (optional)
         """
-        raise Exception('delete_recursive not implemented for box.com') 
-            
+        full_path = self.get_full_path(path)
+        item_id, item_type = self.get_box_item(full_path)
+        if item_id == None:
+            return 0
+        elif item_type == 'file':
+            self.client.file(item_id).delete()
+            return 1
+        else:
+            self.recursive_box_delete(item_id)
+            return 1
+
+    def recursive_box_delete(self, folder_id):
+        for child in self.client.folder(folder_id).get_items():
+            if child.type == 'folder':
+                self.recursive_box_delete(child.id)
+                self.client.folder(child.id).delete()
+            elif child.type == 'file':
+                child_details = self.client.file(child.id).delete()
+
+    def delete_box_item(self, item_id, item_type):
+        if item_type == "folder":
+            self.client.folder(item_id).delete()
+        else:
+            self.client.file(item_id).delete()
+ 
     def move(self, from_path, to_path):
         """
         Move a file or folder to a new path inside the provider's root. Return false if the moved file didn't exist
@@ -212,4 +233,14 @@ class BoxComFSProvider(FSProvider):
         """
         Write the stream to the object denoted by path into the stream
         """
-        raise Exception('write not implemented for box.com')
+        full_path = self.get_full_path(path)
+        target_path = '/'.join(full_path.split('/')[:-1])
+        item_id, item_type = self.get_box_item(target_path, create_if_not_exist=True)
+        if item_type == 'folder':
+            file_name = full_path.split('/')[-1]
+            sio = StringIO()
+            shutil.copyfileobj(stream, sio)
+            sio.seek(0)
+            self.client.folder(item_id).upload_stream(sio, file_name=file_name)
+        else:
+            raise Exception('Not a file name')
