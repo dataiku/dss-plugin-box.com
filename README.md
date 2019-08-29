@@ -28,19 +28,19 @@ In order to use the plugin, you will need to create an app on your box.com accou
 
 1. Go to your [box.com account page](https://app.box.com/account) and upgrade to developper.
 2. From the [developers console](https://app.box.com/developers/console), create a new custom app.
-![](select_app_type.png)
+![](images/select_app_type.png)
 3. Select the **App Token (Server Authentication)** authentication method.
 4. Name your app.
 > People given access to this app will be able to access all files shared to it. Where access to dataset must be restricted to a given group, make and name a separate app for this purpose.
 5. From the App general panel, copy the *User ID*.
 6. From the App configuration panel, copy the *Client ID* and create and copy a secondary access token.
-![](app_config.png)
+![](images/app_config.png)
 
-Once you have retrieved User ID, Client ID need to retrieve the app's sharing email address. To do so:
+Once you have you User ID, Client ID and access token, you will be able to retrieve the app's sharing email address. To do so:
 1. In your project, create a Box.com dataset
-![](create_dataset.png)
+![](images/create_dataset.png)
 2. Select **Check Parameters**
-![](plugin.png)
+![](images/plugin.png)
 3. Fill in the connection credentials and press **Test & get schema**
 > To avoid filling in the connection details in every bonx.com dataset of your project, your can instead set them as project variables as :
 ```json
@@ -51,9 +51,9 @@ Once you have retrieved User ID, Client ID need to retrieve the app's sharing em
 }
 ```
 4. Copy the email address returned in the array.
-![](sharing_email_address.png)
+![](images/sharing_email_address.png)
 
-To make documents visible to DSS, you will need to share them from your box account with this email address.
+To make files visible to DSS, you will need to share them from your box account with this email address.
 
 Once this is done, you can create a new dataset using the box.com plugin. Choose the Filesystem provider, and fill in the details copied from the app configuration panel.
 

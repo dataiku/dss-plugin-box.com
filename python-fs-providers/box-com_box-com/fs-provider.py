@@ -15,7 +15,7 @@ class BoxComFSProvider(FSProvider):
         if len(root) > 0 and root[0] == '/':
             root = root[1:]
         self.root = root
-        self.root_lnt = self.get_lnt_path(root)
+        self.root_lnt = self.get_normalized_path(root)
         self.client_id = config.get("client_id")
         self.client_secret = config.get("client_secret")
         self.access_token = config.get("access_token")
@@ -31,19 +31,18 @@ class BoxComFSProvider(FSProvider):
         if len(path) > 0 and path[0] == '/':
             path = path[1:]
         return path
-    def get_lnt_path(self, path):
+    def get_normalized_path(self, path):
         if len(path) == 0 or path == '/':
             return '/'
         elts = path.split('/')
         elts = [e for e in elts if len(e) > 0]
         return '/' + '/'.join(elts)
     def get_full_path(self, path):
-        lnt_path = self.get_lnt_path(path)
-        rel_path = self.get_rel_path(path)
-        if lnt_path == '/':
+        normalized_path = self.get_normalized_path(path)
+        if normalized_path == '/':
             return self.root_lnt
         else:
-            return self.root_lnt + lnt_path
+            return self.root_lnt + normalized_path
         
     def close(self):
         """
@@ -57,7 +56,6 @@ class BoxComFSProvider(FSProvider):
         if the object doesn't exist
         """
         full_path = self.get_full_path(path)
-        path_lnt = self.get_lnt_path(path)
         item_id, item_type = self.get_box_item(full_path)
 
         if item_id is None:
@@ -65,7 +63,7 @@ class BoxComFSProvider(FSProvider):
         
         item_details = self.get_box_item_details(item_id, item_type)
         
-        ret = {'path': self.get_lnt_path(path) , 'size':item_details.size if (item_details.type == 'file') else 0, 'isDirectory': item_details.type == 'folder'}
+        ret = {'path': self.get_normalized_path(path) , 'size':item_details.size if (item_details.type == 'file') else 0, 'isDirectory': item_details.type == 'folder'}
         
         if "modified_at" in item_details and item_details.modified_at is not None:
             utc_time = datetime.strptime(item_details.modified_at, "%Y-%m-%dT%H:%M:%S-%f:00")
@@ -104,30 +102,30 @@ class BoxComFSProvider(FSProvider):
         """
         Set the modification time on the object denoted by path. Return False if not possible
         """
-        raise Exception('set_last_modified on box.com not implemented')
+        return False
 
     def browse(self, path):
         """
         List the file or directory at the given path, and its children (if directory)
         """
         full_path = self.get_full_path(path)
-        path_lnt = self.get_lnt_path(path)
+        normalized_path = self.get_normalized_path(path)
         item_id, item_type = self.get_box_item(self.get_rel_path(full_path))
         if item_id == None:
-            return {'fullPath' : path_lnt, 'exists' : False}
+            return {'fullPath' : normalized_path, 'exists' : False}
         if item_type == "folder":
             children = []
             folder_id = item_id
             for sub in self.client.folder(folder_id=folder_id).get_items():
                 print('sub:{0}'.format(sub))
                 sub_full_path = os.path.join(full_path, sub.name)
-                sub_path = self.get_lnt_path(os.path.join(full_path, sub.name))
+                sub_path = self.get_normalized_path(os.path.join(full_path, sub.name))
                 child_details = self.get_box_item_details(sub.id, sub.type)
                 children.append({'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == "folder", 'size' : child_details.size})
-            return {'fullPath' : path_lnt, 'exists' : True, 'directory' : True, 'children' : children}
+            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : children}
         else:
             details = self.client.file(item_id).get()
-            return {'fullPath' : path_lnt, 'exists' : True, 'directory' : False, 'size' : details.size}
+            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : False, 'size' : details.size}
 
     def get_box_item_details(self, item_id, item_type):
         if item_type == 'folder':
@@ -143,7 +141,7 @@ class BoxComFSProvider(FSProvider):
         """
         
         full_path = self.get_full_path(path)
-        path_lnt = self.get_lnt_path(path)
+        normalized_path = self.get_normalized_path(path)
         item_id = '0'
         item_id, item_type = self.get_box_item(full_path)
         if item_id is None:
@@ -151,30 +149,22 @@ class BoxComFSProvider(FSProvider):
 
         paths = []
         if item_type == 'folder':
-            paths = self.list_recursive(path, item_id, first_non_empty, False)
+            paths = self.list_recursive(path, item_id, first_non_empty)
         else:
             child_details = self.client.file(item_id).get()
-            paths.append({'path':path_lnt.split("/")[-1], 'size':child_details.size, 'lastModified':int(0) * 1000})
+            paths.append({'path':normalized_path.split("/")[-1], 'size':child_details.size, 'lastModified':int(0) * 1000})
         return paths
             
-    def list_recursive(self, path, folder_id, first_non_empty, box_id_only):
+    def list_recursive(self, path, folder_id, first_non_empty):
         paths = []
         if path == "/":
             path = ""
         for child in self.client.folder(folder_id).get_items():
             if child.type == 'folder':
-                if box_id_only:
-                    child_details = self.client.folder(child.id).get()
-                    paths.append({'id': child_details.id, 'type': child_details.type})
-                paths.extend(self.list_recursive(path + '/' + child.name, child.id, first_non_empty, box_id_only))
+                paths.extend(self.list_recursive(path + '/' + child.name, child.id, first_non_empty))
             else:
                 child_details = self.client.file(child.id).get()
-                if box_id_only:
-                    paths.append({'id': child_details.id, 'type': child_details.type})
-                elif "modified_at" in child_details and child_details.modified_at != None:
-                    paths.append({'path':path + '/' + child_details.name, 'size':child_details.size})
-                else:
-                    paths.append({'path':path + '/' + child_details.name, 'size':child_details.size})
+                paths.append({'path':path + '/' + child_details.name, 'size':child_details.size})
                 if first_non_empty:
                     return paths
         return paths
