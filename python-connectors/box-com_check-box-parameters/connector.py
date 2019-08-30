@@ -13,7 +13,8 @@ class BoxComConnector(Connector):
         self.client_secret = self.config.get("client_secret")
         self.access_token = self.config.get("access_token")
         
-        auth = OAuth2(client_id=self.client_id,
+        auth = OAuth2(
+            client_id=self.client_id,
             client_secret=self.client_secret,
             access_token=self.access_token
         )
@@ -25,7 +26,7 @@ class BoxComConnector(Connector):
 
     def generate_rows(self, dataset_schema=None, dataset_partitioning=None,
                             partition_id=None, records_limit = -1):
-        yield {"Sharing address": self.user.login}
+        yield {"Share your Box.com content with the address below": self.user.login}
 
 
     def get_writer(self, dataset_schema=None, dataset_partitioning=None,

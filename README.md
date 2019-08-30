@@ -24,30 +24,29 @@ You need to install the plugin in Dataiku DSS. Go to the *Administration > Plugi
 
 Create a new dataset using the plugin. You have 3 parameters to fill. Click on the button **Test** & **Get schema** button. Then, **save** and **explore**.
 
-In order to use the plugin, you will need to create an app on your box.com account. 
+In order to use the plugin, the administrator of the box.com account will have to create an box.com app: 
 
-1. Go to your [box.com account page](https://app.box.com/account) and upgrade to developper.
-2. From the [developers console](https://app.box.com/developers/console), create a new custom app.
+1. As administrator, go to your [box.com account page](https://app.box.com/account) and upgrade to developper.
+2. From the administrator's [developers console](https://app.box.com/developers/console), create a new Partner Integration.
 ![](images/select_app_type.png)
-3. Select the **App Token (Server Authentication)** authentication method.
-4. Name your app.
+3. Name your app.
 > People given access to this app will be able to access all files shared to it. Where access to dataset must be restricted to a given group, make and name a separate app for this purpose.
-5. From the App general panel, copy the *User ID*.
-6. From the App configuration panel, copy the *Client ID* and create and copy a secondary access token.
+4. From the App general panel, copy the *User ID*.
+5. From the App configuration panel, copy the *Client ID* and create and copy a secondary access token.
 ![](images/app_config.png)
 
 Once you have you User ID, Client ID and access token, you will be able to retrieve the app's sharing email address. To do so:
-1. In your project, create a Box.com dataset
+1. Inside a DSS project, create a Box.com dataset
 ![](images/create_dataset.png)
 2. Select **Check Parameters**
 ![](images/plugin.png)
 3. Fill in the connection credentials and press **Test & get schema**
-> To avoid filling in the connection details in every bonx.com dataset of your project, your can instead set them as project variables as :
+> To avoid filling in the connection details in every box.com dataset of your project, your can instead set them as project variables as :
 ```json
 {
   "box_access_token": "1234abc...",
-  "box_client_secret": "5678def...",
-  "box_client_id": "9876543210"
+  "box_client_id": "5678def...",
+  "box_user_id": "9876543210"
 }
 ```
 4. Copy the email address returned in the array.

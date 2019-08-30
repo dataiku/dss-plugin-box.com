@@ -19,7 +19,8 @@ class BoxComFSProvider(FSProvider):
         self.client_id = config.get("client_id")
         self.client_secret = config.get("client_secret")
         self.access_token = config.get("access_token")
-        auth = OAuth2(client_id=self.client_id,
+        auth = OAuth2(
+            client_id=self.client_id,
             client_secret=self.client_secret,
             access_token=self.access_token
         )
@@ -72,7 +73,7 @@ class BoxComFSProvider(FSProvider):
 
         return ret
     
-    def get_box_item(self, path, create_if_not_exist=False):
+    def get_box_item(self, path):
         path = self.get_rel_path(path)
         item_id = '0'
         if path == '':
@@ -90,11 +91,7 @@ class BoxComFSProvider(FSProvider):
                     found = True
                     break
             if found == False:
-                if create_if_not_exist:
-                    new_folder = self.client.folder(item_id).create_subfolder(elt)
-                    item_id = new_folder.id
-                else:
-                    return None, None
+                return None, None
         
         return item_id, item_type
 
@@ -117,8 +114,6 @@ class BoxComFSProvider(FSProvider):
             children = []
             folder_id = item_id
             for sub in self.client.folder(folder_id=folder_id).get_items():
-                print('sub:{0}'.format(sub))
-                sub_full_path = os.path.join(full_path, sub.name)
                 sub_path = self.get_normalized_path(os.path.join(full_path, sub.name))
                 child_details = self.get_box_item_details(sub.id, sub.type)
                 children.append({'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == "folder", 'size' : child_details.size})
@@ -189,7 +184,7 @@ class BoxComFSProvider(FSProvider):
                 byte_range = (0, int(limit) - 1)
             else:
                 byte_range = None
-        file_id, item_type = self.get_box_item(full_path)
+        file_id, _ = self.get_box_item(full_path)
         if file_id == None:
             raise Exception('Path doesn t exist')
         if byte_range:

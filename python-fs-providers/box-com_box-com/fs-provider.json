@@ -1,5 +1,5 @@
 {
-    "meta" : {
+    "meta": {
         "label": "Filesystem provider",
         "description": "Enables sharing between DSS and your box.com account",
         "icon": "icon-cloud"
@@ -7,26 +7,26 @@
     "params": [
         {
             "name": "client_id",
-            "label": "Client ID",
+            "label": "User ID",
             "type": "STRING",
-            "description": "Your Box.com Client ID",
-            "defaultValue" : "${box_client_id}",
+            "description": "Your Box.com user ID",
+            "defaultValue": "${box_user_id}",
             "mandatory": true
         },
         {
             "name": "client_secret",
-            "label": "Client secret",
+            "label": "Client ID",
             "type": "STRING",
-            "description": "Your Box.com client secret",
-            "defaultValue" : "${box_client_secret}",
+            "description": "The DSS Box.com App client ID",
+            "defaultValue": "${box_client_id}",
             "mandatory": true
         },
         {
             "name": "access_token",
             "label": "Access token",
             "type": "STRING",
-            "description": "The access token generated for your box.com app",
-            "defaultValue" : "${box_access_token}",
+            "description": "The access token generated for the DSS box.com app",
+            "defaultValue": "${box_access_token}",
             "mandatory": true
         }
     ]
