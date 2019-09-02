@@ -1,9 +1,11 @@
 from dataiku.fsprovider import FSProvider
 from boxsdk import OAuth2, Client
 
-import os, shutil
+import os, shutil, json
 from StringIO import StringIO
 from datetime import datetime
+
+from cache_handler import CacheHandler
 
 class BoxComFSProvider(FSProvider):
     def __init__(self, root, config, plugin_config):
@@ -26,6 +28,7 @@ class BoxComFSProvider(FSProvider):
         )
         self.client = Client(auth)
         self.user = self.client.user().get()
+        self.cache = CacheHandler(config)
 
     # util methods
     def get_rel_path(self, path):
@@ -44,13 +47,26 @@ class BoxComFSProvider(FSProvider):
             return self.root_lnt
         else:
             return self.root_lnt + normalized_path
-        
+
+    def load_cache(self):
+        try:
+            print ('ALX:load_cache:1')
+            with open(self.cache_location, "r") as file_handle:
+                self.cache = json.load(file_handle)
+                print ('ALX:load_cache:2')
+                file_handle.close()
+        except:
+            print ('ALX:load_cache:3')
+            self.cache = {}
+        print ('ALX:load_cache:4:{0}'.format(self.cache))
+    
     def close(self):
         """
         Perform any necessary cleanup
         """
+        self.cache.dump_cache()
         print ('box.com:close')
-
+            
     def stat(self, path):
         """
         Get the info about the object at the given path inside the provider's root, or None 
@@ -74,12 +90,19 @@ class BoxComFSProvider(FSProvider):
         return ret
     
     def get_box_item(self, path):
-        path = self.get_rel_path(path)
-        item_id = '0'
-        if path == '':
-            return item_id, "folder"
-        
-        elts = path.split('/')
+        rel_path = self.get_rel_path(path)
+
+        if rel_path == '':
+            return '0', "folder"
+
+        item_id, item_type = self.cache.query_cache(rel_path)
+        if item_id is not None:
+            return item_id, item_type
+        else:
+            item_id = '0'
+            item_type = 'folder'
+
+        elts = rel_path.split('/')
         
         for elt in elts:
             items_iter = self.client.folder(folder_id=item_id).get_items()
@@ -93,8 +116,10 @@ class BoxComFSProvider(FSProvider):
             if found == False:
                 return None, None
         
+        self.cache.add_to_cache(rel_path, item_id, item_type)
+        
         return item_id, item_type
-
+        
     def set_last_modified(self, path, last_modified):
         """
         Set the modification time on the object denoted by path. Return False if not possible
@@ -113,20 +138,25 @@ class BoxComFSProvider(FSProvider):
         if item_type == "folder":
             children = []
             folder_id = item_id
-            for sub in self.client.folder(folder_id=folder_id).get_items():
+            for sub in self.client.folder(folder_id=folder_id).get_items(fields = ['modified_at','name','type','size']):
                 sub_path = self.get_normalized_path(os.path.join(full_path, sub.name))
-                child_details = self.get_box_item_details(sub.id, sub.type)
-                children.append({'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == "folder", 'size' : child_details.size})
+                ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == "folder", 'size' : sub.size}
+                children.append(ret)
+                self.cache.add_to_cache(self.get_rel_path(sub_path), sub.id, sub.type)
             return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : children}
         else:
             details = self.client.file(item_id).get()
-            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : False, 'size' : details.size}
+            file_size = details.get('size')
+            ret = {'fullPath' : normalized_path, 'exists' : True, 'directory' : False, 'size' : file_size}
+            return ret
 
     def get_box_item_details(self, item_id, item_type):
         if item_type == 'folder':
-            return self.client.folder(item_id).get()
+            ret = self.client.folder(item_id).get()
         else:
-            return self.client.file(item_id).get()
+            ret = self.client.file(item_id).get()
+        store = {"type":ret.get('type'), "size":ret.get('size')}#modified_at
+        return ret
         
     def enumerate(self, path, first_non_empty):
         """
@@ -154,12 +184,11 @@ class BoxComFSProvider(FSProvider):
         paths = []
         if path == "/":
             path = ""
-        for child in self.client.folder(folder_id).get_items():
+        for child in self.client.folder(folder_id).get_items(fields = ['modified_at','name','type','size']):
             if child.type == 'folder':
                 paths.extend(self.list_recursive(path + '/' + child.name, child.id, first_non_empty))
             else:
-                child_details = self.client.file(child.id).get()
-                paths.append({'path':path + '/' + child_details.name, 'size':child_details.size})
+                paths.append({'path':path + '/' + child.name, 'size':child.size})
                 if first_non_empty:
                     return paths
         return paths

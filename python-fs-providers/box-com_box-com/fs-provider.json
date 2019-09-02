@@ -28,6 +28,12 @@
             "description": "The access token generated for the DSS box.com app",
             "defaultValue": "${box_access_token}",
             "mandatory": true
+        },
+        {
+            "name": "cache_enabled",
+            "type": "BOOLEAN",
+            "label" : "Use cache to speed up",
+            "defaultValue": true
         }
     ]
 }
