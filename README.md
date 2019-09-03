@@ -37,7 +37,9 @@ In order to use the plugin, the administrator of the box.com account will have t
 
 Once you have you User ID, Client ID and access token, you will be able to retrieve the app's sharing email address. To do so:
 1. Inside a DSS project, go to the **Macros** menu
+
 ![](images/macro_menu.png)
+
 2. Select the **Get Box.com sharing email** macro
 ![](images/select_macro.png)
 3. Fill in the connection credentials and press **Run Macro**
