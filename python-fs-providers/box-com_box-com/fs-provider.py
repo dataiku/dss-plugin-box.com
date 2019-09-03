@@ -47,18 +47,6 @@ class BoxComFSProvider(FSProvider):
             return self.root_lnt
         else:
             return self.root_lnt + normalized_path
-
-    def load_cache(self):
-        try:
-            print ('ALX:load_cache:1')
-            with open(self.cache_location, "r") as file_handle:
-                self.cache = json.load(file_handle)
-                print ('ALX:load_cache:2')
-                file_handle.close()
-        except:
-            print ('ALX:load_cache:3')
-            self.cache = {}
-        print ('ALX:load_cache:4:{0}'.format(self.cache))
     
     def close(self):
         """
@@ -164,7 +152,6 @@ class BoxComFSProvider(FSProvider):
         
         If the prefix doesn't denote a file or folder, return None
         """
-        
         full_path = self.get_full_path(path)
         normalized_path = self.get_normalized_path(path)
         item_id = '0'
