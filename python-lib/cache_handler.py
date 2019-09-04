@@ -1,4 +1,5 @@
-import os, json
+import os, json, uuid
+from shutil import move
 
 class CacheHandler():
     def __init__(self, config):
@@ -7,6 +8,7 @@ class CacheHandler():
         if self.cache_enabled:
             self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + self.client_id
             self.load_cache()
+            self.uuid = uuid.uuid4()
             
     def load_cache(self):
         try:
@@ -20,14 +22,16 @@ class CacheHandler():
         if not self.cache_enabled:
             return
         try:
-            self.create_dir(self.cache_location)
-            with open(self.cache_location, "w") as file_handle:
+            tempo_location = self.cache_location + str(self.uuid)
+            self.create_dir(tempo_location)
+            with open(tempo_location, "w") as file_handle:
                 file_handle.write(json.dumps(self.cache))
                 file_handle.close()
+            move(tempo_location, self.cache_location)
         except (IOError, ValueError, EOFError) as e:
-            print(e)
+            print('Error while saving cache:' + e)
         except:
-            print('Error')
+            print('Error while saving cache')
             
     def create_dir(self,filename):
         if not os.path.exists(os.path.dirname(filename)):
