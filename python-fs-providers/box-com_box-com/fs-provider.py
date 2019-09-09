@@ -30,6 +30,7 @@ class BoxComFSProvider(FSProvider, Utils):
         self.client = Client(auth)
         self.user = self.client.user().get()
         self.box_item = BoxItem(config, root, self.client)
+        self.box_item.check_path_format(self.root_lnt)
     
     def close(self):
         """

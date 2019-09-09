@@ -1,4 +1,4 @@
-import os, json, utils
+import os, json, utils, string
 from StringIO import StringIO
 from datetime import datetime
 from cache_handler import CacheHandler
@@ -105,6 +105,18 @@ class BoxItem(Utils):
         else:
             ws = self.client.file(self.id).content()
         return StringIO(ws)
-    
+
+    def check_path_format(self, path):
+        special_names = [".",".."]
+        if not all(c in string.printable for c in path):
+            raise Exception('The path contains non-printable char(s)')
+        for element in path.split('/'):
+            if len(element) > 255:
+                raise Exception('An element of the path is longer than the allowed 255 characters')
+            if element in special_names:
+                raise Exception('Special name "{0}" is not allowed in a box.com path'.format(element))
+            if element.endswith(' '):
+                raise Exception('An element of the path contains a trailing space')
+
     def close(self):
         self.cache.dump_cache()
