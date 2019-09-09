@@ -30,13 +30,14 @@ class BoxComFSProvider(FSProvider, Utils):
         self.client = Client(auth)
         self.user = self.client.user().get()
         self.box_item = BoxItem(config, root, self.client)
-    
+        self.box_item.check_path_format(self.root_lnt)
+
     def close(self):
         """
         Perform any necessary cleanup
         """
         self.box_item.close()
-            
+
     def stat(self, path):
         """
         Get the info about the object at the given path inside the provider's root, or None 
@@ -48,7 +49,7 @@ class BoxComFSProvider(FSProvider, Utils):
             return None
         ret = box_item.get_stat()
         return ret
-        
+
     def set_last_modified(self, path, last_modified):
         """
         Set the modification time on the object denoted by path. Return False if not possible
@@ -68,7 +69,7 @@ class BoxComFSProvider(FSProvider, Utils):
             return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : item.get_children()}
         else:
             return item.get_as_browse()
-        
+
     def enumerate(self, path, first_non_empty):
         """
         Enumerate files recursively from prefix. If first_non_empty, stop at the first non-empty file.
@@ -88,7 +89,7 @@ class BoxComFSProvider(FSProvider, Utils):
         else:
             paths.append({'path':normalized_path.split("/")[-1], 'size':item.size, 'lastModified':int(0) * 1000})
         return paths
-            
+
     def list_recursive(self, path, folder_id, first_non_empty):
         paths = []
         if path == "/":
@@ -101,13 +102,20 @@ class BoxComFSProvider(FSProvider, Utils):
                 if first_non_empty:
                     return paths
         return paths
-        
+
     def delete_recursive(self, path):
         """
         Delete recursively from path. Return the number of deleted files (optional)
         """
-        raise Exception('delete_recursive not implemented for box.com') 
-            
+        full_path = self.get_full_path(path)
+        item = self.box_item.get_by_path(full_path, force_no_cache = True)
+        if item.not_exists():
+            return 0
+        else:
+            ret = item.delete()
+            self.box_item.cache.reset()
+            return ret
+
     def move(self, from_path, to_path):
         """
         Move a file or folder to a new path inside the provider's root. Return false if the moved file didn't exist
@@ -126,9 +134,14 @@ class BoxComFSProvider(FSProvider, Utils):
         if item.not_exists():
             raise Exception('Path doesn t exist')
         shutil.copyfileobj(item.get_stream(byte_range), stream)
-        
+
     def write(self, path, stream):
         """
         Write the stream to the object denoted by path into the stream
         """
-        raise Exception('write not implemented for box.com')
+        full_path = self.get_full_path(path)
+        item = self.box_item.create_path(full_path, force_no_cache = True)
+        if item.is_folder():
+            item.write_stream(stream)
+        else:
+            raise Exception('Not a file name')
