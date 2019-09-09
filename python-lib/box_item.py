@@ -37,8 +37,10 @@ class BoxItem(Utils):
             item_type = self.BOX_FOLDER
 
         elts = rel_path.split('/')
-        
+
+        current_path = ''
         for elt in elts:
+            current_path = os.path.join(current_path, elt)
             items_iter = self.client.folder(folder_id=item_id).get_items(fields = ['modified_at','name','type','size'])
             found = False
             for item in items_iter:
@@ -49,7 +51,7 @@ class BoxItem(Utils):
                     self.type = item.type
                     self.modified_at = self.format_date(item.modified_at)
                     self.size = item.size
-                    self.cache.add_to_cache(rel_path, item.id, item.type)
+                    self.cache.add_to_cache(current_path, item.id, item.type)
                     found = True
                     break
         
