@@ -19,7 +19,6 @@ class BoxItem(Utils):
         
     def get_by_path(self, path):
         rel_path = self.get_rel_path(path)
-
         if rel_path == '':
             self.id = "0"
             self.type = self.BOX_FOLDER
@@ -28,13 +27,19 @@ class BoxItem(Utils):
 
         item_id, item_type = self.cache.query_cache(rel_path)
         if item_id is not None:
-            self.path = rel_path
-            self.id = item_id
-            self.type = item_type
-            return self
-        else:
-            item_id = '0'
-            item_type = self.BOX_FOLDER
+            try:
+                item = self.get_details(item_id, item_type)
+                self.path = rel_path
+                self.id = item_id
+                self.type = item_type
+                self.size = (item.size if self.is_file() else 0)
+                return self
+            except:
+                pass
+
+        # Start iterating path from root id "0"
+        item_id = '0'
+        item_type = self.BOX_FOLDER
 
         elts = rel_path.split('/')
 
@@ -61,7 +66,13 @@ class BoxItem(Utils):
             self.modified_at = None
             self.size = None
         return self
-    
+
+    def get_details(self, id, type):
+        if type == self.BOX_FOLDER:
+            return self.client.folder(id).get(fields = ['modified_at','name','type','size'])
+        elif type == self.BOX_FILE:
+            return self.client.file(id).get(fields = ['modified_at','name','type','size'])
+
     def format_date(self, date):
         if date is not None:
             utc_time = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S-%f:00")
@@ -69,18 +80,21 @@ class BoxItem(Utils):
             return int(epoch_time) * 1000
         else:
             return None
-            
+
     def not_exists(self):
         return (self.id == None)
-    
+
     def exists(self):
         return (self.id is not None)
-    
+
     def is_folder(self):
         return self.type == self.BOX_FOLDER
-    
+
+    def is_file(self):
+        return self.type == self.BOX_FILE
+
     def get_stat(self):
-        ret = {'path': self.get_normalized_path(self.path) , 'size':self.size if self.is_folder() else 0, 'isDirectory': self.is_folder()}
+        ret = {'path': self.get_normalized_path(self.path) , 'size':(self.size if self.is_file() else 0), 'isDirectory': self.is_folder()}
         if self.modified_at is not None:
             ret["lastModified"] = self.modified_at
         return ret
