@@ -9,7 +9,6 @@ class CacheHandler():
             self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + self.client_id
             self.load_cache()
             self.uuid = uuid.uuid4()
-            self.added = {}
             self.removed = []
 
     def load_cache(self):
@@ -25,18 +24,18 @@ class CacheHandler():
             return
         if self.cache != {}:
             self.cache = {}
-            self.dump()
+            self.write_onto_disk()
 
-    def dump(self):
+    def write_onto_disk(self):
         if not self.cache_enabled:
             return
         try:
-            tempo_location = self.cache_location + str(self.uuid)
-            self.create_dir(tempo_location)
-            with open(tempo_location, "w") as file_handle:
+            temporary_location = self.cache_location + str(self.uuid)
+            self.create_dir(temporary_location)
+            with open(temporary_location, "w") as file_handle:
                 file_handle.write(json.dumps(self.cache))
                 file_handle.close()
-            move(tempo_location, self.cache_location)
+            move(temporary_location, self.cache_location)
         except (IOError, ValueError, EOFError) as e:
             print('Error while saving cache:' + e)
         except:
@@ -53,12 +52,11 @@ class CacheHandler():
                 return 0
         return 0
 
-    def add(self, path, item_id, item_type, source = None):
+    def add(self, path, item_id, item_type):
         if not self.cache_enabled:
             return
-        self.cache[path] = {"item_id":item_id, "item_type":item_type, "source": source}
-        self.added[path] = {"item_id":item_id, "item_type":item_type}
-        self.dump()
+        self.cache[path] = {"item_id":item_id, "item_type":item_type}
+        self.write_onto_disk()
 
     def query(self, path, force_no_cache = False):
         if not self.cache_enabled or force_no_cache:

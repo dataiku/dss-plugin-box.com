@@ -16,7 +16,7 @@ class CleanCache(Runnable):
     def run(self, progress_callback):
         if os.path.isfile(self.cache_location):
             os.remove(self.cache_location)
-            return "Done !"
+            return "Done!"
         else:
             return "Error: no cache found"
         

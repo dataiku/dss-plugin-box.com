@@ -63,7 +63,7 @@ class BoxItem(Utils):
                     self.type = item.type
                     self.modified_at = self.format_date(item.modified_at)
                     self.size = item.size
-                    self.cache.add(current_path, item.id, item.type, 'get_by_path1')
+                    self.cache.add(current_path, item.id, item.type)
                     found = True
                     break
         
@@ -71,7 +71,7 @@ class BoxItem(Utils):
                 if create_if_not_exist:
                     new_folder = self.create_subfolder(elt)
                     item_id = new_folder.id
-                    self.cache.add(current_path, new_folder.id, self.BOX_FOLDER, 'get_by_path2')
+                    self.cache.add(current_path, new_folder.id, self.BOX_FOLDER)
                 else:
                     self.set_none()
         return self
@@ -150,7 +150,7 @@ class BoxItem(Utils):
             sub_path = self.get_normalized_path(os.path.join(full_path, sub.name))
             ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size}
             children.append(ret)
-            self.cache.add(self.get_rel_path(sub_path), sub.id, sub.type, 'get_children')
+            self.cache.add(self.get_rel_path(sub_path), sub.id, sub.type)
         return children
 
     def get_id(self):
@@ -173,7 +173,7 @@ class BoxItem(Utils):
         sio.seek(0)
         ret = self.client.folder(self.id).upload_stream(sio, file_name=file_name)
         self.id = ret.id
-        self.cache.add(self.path, ret.id, ret.type, 'write_stream')
+        self.cache.add(self.path, ret.id, ret.type)
         return self
 
     def create_path(self, path, force_no_cache = False):
@@ -197,19 +197,20 @@ class BoxItem(Utils):
         if self.is_folder():
             return self.recursive_delete()
 
-    def recursive_delete(self, counter=0, id = None):
+    def recursive_delete(self, id = None):
+        counter = 0
         if id is None:
             id = self.id
         try:
             for child in self.client.folder(id).get_items():
                 if child.type == self.BOX_FOLDER:
-                    ret = self.recursive_delete(counter = counter, id = child.id)
+                    counter = counter + self.recursive_delete(id = child.id)
                     try: 
                         self.client.folder(child.id).delete()
                         self.cache.remove(child.id)
-                        counter = counter + ret + 1
+                        counter = counter + 1
                     except:
-                        counter = counter + ret
+                        pass
                 elif child.type == self.BOX_FILE:
                     try:
                         self.client.file(child.id).delete()
@@ -276,4 +277,4 @@ class BoxItem(Utils):
                 raise Exception('An element of the path contains a trailing space')
 
     def close(self):
-        self.cache.dump()
+        self.cache.write_onto_disk()
