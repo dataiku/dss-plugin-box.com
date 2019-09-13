@@ -73,3 +73,17 @@ Choose the Filesystem provider, and fill in the details copied from the app conf
 From the connector's *Settings > Files* panel, you should now be able to browser your box directory and select the file or directory you want to access.
 
 ![](images/browsing.png)
+
+## Write mode
+
+- Edit the `DATADIR/config/dip.properties` file and add the following key: `dku.datasets.external.no_connection.allowClear=true`
+- Share an empty directory with the box.com dss app. It is important that it does not contain data you want to keep: **the entire structure contained inside this directory can be deleted by the plugin**.
+- In the flow, create your target box.com dataset first, by selecting the box.com plugin in the dataset list.
+- Browse to your target directory, name this new dataset and press **create**
+- If the following message appears : `An invalid argument has been encountered : Missing parameters for CSV` got to the dataset *Settings > Format / Preview* and set *Quoting style*
+
+![](images/set_quoting_style.png)
+
+- Pick the source dataset and create a sync recipe from it. Select *Use existing dataset* and pick your target box.com dataset. Finally **Create recipe**.
+
+![](images/create_sync.png)
