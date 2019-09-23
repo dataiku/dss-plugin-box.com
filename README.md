@@ -33,12 +33,11 @@ In order to use the plugin, the administrator of the box.com account will have t
 
 3. Name your app.
 > People given access to this app will be able to access all files shared to it. Where access to dataset must be restricted to a given group, make and name a separate app for this purpose.
-4. From the App general panel, copy the *User ID*.
-5. From the App configuration panel, copy the *Client ID* and create and copy a secondary access token.
+4. From the App configuration panel, create and copy a secondary access token.
 
 ![](images/app_config.png)
 
-Once you have you User ID, Client ID and access token, you will be able to retrieve the app's sharing email address. To do so:
+Once you have the access token, you will be able to retrieve the app's sharing email address. To do so:
 1. Inside a DSS project, go to the **Macros** menu
 
 ![](images/macro_menu.png)
@@ -51,12 +50,10 @@ Once you have you User ID, Client ID and access token, you will be able to retri
 > To avoid filling in the connection details in every box.com dataset of your project, your can instead set them as project variables as :
 ```json
 {
-  "box_access_token": "1234abc...",
-  "box_client_id": "5678def...",
-  "box_user_id": "9876543210"
+  "box_access_token": "1234abc..."
 }
 ```
-4. Copy the email address returned in the array.
+4. Copy the email address returned.
 
 ![](images/sharing_email_address.png)
 
@@ -78,7 +75,7 @@ From the connector's *Settings > Files* panel, you should now be able to browser
 
 - Edit the `DATADIR/config/dip.properties` file and add the following key: `dku.datasets.external.no_connection.allowClear=true`
 - Share an empty directory with the box.com dss app. It is important that it does not contain data you want to keep: **the entire structure contained inside this directory can be deleted by the plugin**.
-- In the flow, create your target box.com dataset first, by selecting the box.com plugin in the dataset list.
+- In the flow, first create your target box.com dataset, by selecting the box.com plugin in the dataset list.
 - Browse to your target directory, name this new dataset and press **create**
 - If the following message appears : `An invalid argument has been encountered : Missing parameters for CSV` got to the dataset *Settings > Format / Preview* and set *Quoting style*
 

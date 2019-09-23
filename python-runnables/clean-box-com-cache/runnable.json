@@ -7,11 +7,11 @@
     "impersonate": false,
     "params": [
         {
-            "name": "client_id",
-            "label": "User ID",
+            "name": "access_token",
+            "label": "Access token",
             "type": "STRING",
-            "description": "Your Box.com user ID",
-            "defaultValue": "${box_user_id}",
+            "description": "The access token generated for the DSS box.com app",
+            "defaultValue": "${box_access_token}",
             "mandatory": true
         }
     ],

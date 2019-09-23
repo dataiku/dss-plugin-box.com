@@ -1,5 +1,5 @@
 from dataiku.runnables import Runnable
-import os
+import os, hashlib
 
 class CleanCache(Runnable):
 
@@ -7,8 +7,8 @@ class CleanCache(Runnable):
         self.project_key = project_key
         self.config = config
         self.plugin_config = plugin_config
-        self.client_id = self.config.get("client_id")
-        self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + self.client_id
+        self.access_token = self.config.get("access_token")
+        self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token).hexdigest()
         
     def get_progress_target(self):
         return None

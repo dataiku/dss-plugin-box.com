@@ -19,12 +19,10 @@ class BoxComFSProvider(FSProvider, Utils):
             root = root[1:]
         self.root = root
         self.root_lnt = self.get_normalized_path(root)
-        self.client_id = config.get("client_id")
-        self.client_secret = config.get("client_secret")
         self.access_token = config.get("access_token")
         auth = OAuth2(
-            client_id=self.client_id,
-            client_secret=self.client_secret,
+            client_id="",
+            client_secret="",
             access_token=self.access_token
         )
         self.client = Client(auth)

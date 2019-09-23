@@ -8,13 +8,11 @@ class GetBoxSharingEmail(Runnable):
         self.config = config
         self.plugin_config = plugin_config
         
-        self.client_id = self.config.get("client_id")
-        self.client_secret = self.config.get("client_secret")
         self.access_token = self.config.get("access_token")
         
         auth = OAuth2(
-            client_id=self.client_id,
-            client_secret=self.client_secret,
+            client_id="",
+            client_secret="",
             access_token=self.access_token
         )
         self.client = Client(auth)

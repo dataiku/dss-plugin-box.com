@@ -4,9 +4,9 @@ from shutil import move
 class CacheHandler():
     def __init__(self, config):
         self.cache_enabled = config.get("cache_enabled")
-        self.client_id = config.get("client_id")
+        self.access_token = config.get("access_token")
         if self.cache_enabled:
-            self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + self.client_id
+            self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token).hexdigest()
             self.load_cache()
             self.uuid = uuid.uuid4()
             self.removed = []
