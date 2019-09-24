@@ -37,6 +37,10 @@ In order to use the plugin, the administrator of the box.com account will have t
 
 ![](images/app_config.png)
 
+5. Go to the plugin's setting page and create a preset. In the preset, paste the access token. 
+
+![](images/create_preset.png)
+
 Once you have the access token, you will be able to retrieve the app's sharing email address. To do so:
 1. Inside a DSS project, go to the **Macros** menu
 
@@ -46,13 +50,8 @@ Once you have the access token, you will be able to retrieve the app's sharing e
 
 ![](images/select_macro.png)
 
-3. Fill in the connection credentials and press **Run Macro**
-> To avoid filling in the connection details in every box.com dataset of your project, your can instead set them as project variables as :
-```json
-{
-  "box_access_token": "1234abc..."
-}
-```
+3. Pick a previously created preset, or fill in the access token using **Manually defined**. Then press **Run Macro**
+
 4. Copy the email address returned.
 
 ![](images/sharing_email_address.png)
