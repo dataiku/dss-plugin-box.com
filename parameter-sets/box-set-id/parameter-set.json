@@ -1,0 +1,18 @@
+{
+    "meta" : {
+        "label": "Box.com",
+        "description": "Connection details for box.com app access",
+        "icon": "icon-cloud"
+    },
+    "defaultDefinableInline": true,
+    "defaultDefinableAtProjectLevel": true,
+    "pluginParams": [
+        {
+            "name": "access_token",
+            "label": "Box.com app's access token",
+            "type": "PASSWORD",
+            "description": "The access token generated for the DSS box.com app",
+            "mandatory": true
+        }
+    ]
+}

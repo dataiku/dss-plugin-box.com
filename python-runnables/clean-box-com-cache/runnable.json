@@ -7,12 +7,10 @@
     "impersonate": false,
     "params": [
         {
-            "name": "access_token",
-            "label": "Access token",
-            "type": "STRING",
-            "description": "The access token generated for the DSS box.com app",
-            "defaultValue": "${box_access_token}",
-            "mandatory": true
+            "name":"box_com_connection",
+            "label":"Define a connection",
+            "type":"PRESET",
+            "parameterSetId":"box-set-id"
         }
     ],
     "permissions": [],

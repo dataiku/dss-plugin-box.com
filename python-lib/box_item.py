@@ -14,13 +14,13 @@ class BoxItem(Utils):
     BOX_ERR_RESERVED = 'name_temporarily_reserved'
     BOX_ERR_DUPLICATE = 'item_name_in_use'
 
-    def __init__(self, config, root, client):
+    def __init__(self, cache_file_name, root, client):
         self.path = ''
         self.id = "0"
         self.type = self.BOX_FOLDER
         self.modified_at = None
         self.size = 0
-        self.cache = CacheHandler(config)
+        self.cache = CacheHandler(cache_file_name)
         self.root_lnt = self.get_normalized_path(root)
         self.client = client
 

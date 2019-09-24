@@ -1,12 +1,14 @@
-import os, json, uuid, hashlib, time
+import os, json, uuid, time
 from shutil import move
 
 class CacheHandler():
-    def __init__(self, config):
-        self.cache_enabled = config.get("cache_enabled")
-        self.access_token = config.get("access_token")
+    def __init__(self, cache_file_name):
+        if cache_file_name is None:
+            self.cache_enabled = False
+        else:
+            self.cache_enabled = True
         if self.cache_enabled:
-            self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token).hexdigest()
+            self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + cache_file_name
             self.load_cache()
             self.uuid = uuid.uuid4()
             self.removed = []

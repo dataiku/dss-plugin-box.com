@@ -1,7 +1,7 @@
 from dataiku.fsprovider import FSProvider
 from boxsdk import OAuth2, Client
 
-import os, shutil, json
+import os, shutil, json, hashlib
 
 from cache_handler import CacheHandler
 from box_item import BoxItem
@@ -19,7 +19,13 @@ class BoxComFSProvider(FSProvider, Utils):
             root = root[1:]
         self.root = root
         self.root_lnt = self.get_normalized_path(root)
-        self.access_token = config.get("access_token")
+        self.connection = client.get("box_com_connection")
+        self.access_token = self.connection['access_token']
+        self.cache_enabled = config.get("cache_enabled")
+        if self.cache_enabled:
+            cache_file_name = hashlib.sha1(self.access_token).hexdigest()
+        else:
+            cache_file_name = None
         auth = OAuth2(
             client_id="",
             client_secret="",
@@ -27,7 +33,7 @@ class BoxComFSProvider(FSProvider, Utils):
         )
         self.client = Client(auth)
         self.user = self.client.user().get()
-        self.box_item = BoxItem(config, root, self.client)
+        self.box_item = BoxItem(cache_file_name, root, self.client)
         self.box_item.check_path_format(self.root_lnt)
 
     def close(self):

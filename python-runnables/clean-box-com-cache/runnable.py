@@ -7,7 +7,8 @@ class CleanCache(Runnable):
         self.project_key = project_key
         self.config = config
         self.plugin_config = plugin_config
-        self.access_token = self.config.get("access_token")
+        self.connection = self.plugin_config.get("box_com_connection")
+        self.access_token = self.connection['access_token']
         self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token).hexdigest()
         
     def get_progress_target(self):
