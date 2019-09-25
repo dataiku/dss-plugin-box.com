@@ -1,12 +1,15 @@
 {
     "id": "box-com",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "meta": {
         "label": "box.com",
         "description": "Gives access to your Box.com stored data",
         "author": "admin",
         "icon": "icon-cloud",
-        "tags": ["Connector","Cloud"],
+        "tags": [
+            "Connector",
+            "Cloud"
+        ],
         "url": "https://www.dataiku.com/dss/plugins/info/box-com.html",
         "licenseInfo": "Apache Software License"
     }

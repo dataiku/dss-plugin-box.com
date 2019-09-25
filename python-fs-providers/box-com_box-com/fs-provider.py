@@ -1,9 +1,8 @@
 from dataiku.fsprovider import FSProvider
 from boxsdk import OAuth2, Client
 
-import os, shutil, json, hashlib
+import os, shutil, json, hashlib, logging
 
-from cache_handler import CacheHandler
 from box_item import BoxItem
 from utils import Utils
 
@@ -18,7 +17,6 @@ class BoxComFSProvider(FSProvider, Utils):
         if len(root) > 0 and root[0] == '/':
             root = root[1:]
         self.root = root
-        self.root_lnt = self.get_normalized_path(root)
         self.connection = client.get("box_com_connection")
         self.access_token = self.connection['access_token']
         self.cache_enabled = config.get("cache_enabled")
@@ -34,7 +32,7 @@ class BoxComFSProvider(FSProvider, Utils):
         self.client = Client(auth)
         self.user = self.client.user().get()
         self.box_item = BoxItem(cache_file_name, root, self.client)
-        self.box_item.check_path_format(self.root_lnt)
+        self.box_item.check_path_format(self.get_normalized_path(root))
 
     def close(self):
         """
@@ -47,7 +45,7 @@ class BoxComFSProvider(FSProvider, Utils):
         Get the info about the object at the given path inside the provider's root, or None 
         if the object doesn't exist
         """
-        full_path = self.get_full_path(path)
+        full_path = self.get_full_path(self.root, path)
         box_item = self.box_item.get_by_path(full_path)
         if box_item.not_exists():
             return None
@@ -80,7 +78,7 @@ class BoxComFSProvider(FSProvider, Utils):
         
         If the prefix doesn't denote a file or folder, return None
         """
-        full_path = self.get_full_path(path)
+        full_path = self.get_full_path(self.root, path)
         normalized_path = self.get_normalized_path(path)
 
         item = self.box_item.get_by_path(full_path)
@@ -111,7 +109,7 @@ class BoxComFSProvider(FSProvider, Utils):
         """
         Delete recursively from path. Return the number of deleted files (optional)
         """
-        full_path = self.get_full_path(path)
+        full_path = self.get_full_path(self.root, path)
         item = self.box_item.get_by_path(full_path, force_no_cache = True)
         if item.not_exists():
             return 0
@@ -127,13 +125,14 @@ class BoxComFSProvider(FSProvider, Utils):
         raise Exception('move not implemented for box.com')
 
     def read(self, path, stream, limit):
-        full_path = self.get_full_path(path)
+        full_path = self.get_full_path(self.root, path)
+        byte_range = None
+
         if limit is not None and limit is not "-1":
             int_limit = int(limit)
             if int_limit > 0:
                 byte_range = (0, int(limit) - 1)
-            else:
-                byte_range = None
+
         item = self.box_item.get_by_path(full_path)
         if item.not_exists():
             raise Exception('Path doesn t exist')
@@ -143,7 +142,7 @@ class BoxComFSProvider(FSProvider, Utils):
         """
         Write the stream to the object denoted by path into the stream
         """
-        full_path = self.get_full_path(path)
+        full_path = self.get_full_path(self.root, path)
         item = self.box_item.create_path(full_path, force_no_cache = True)
         if item.is_folder():
             item.write_stream(stream)

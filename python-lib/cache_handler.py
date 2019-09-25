@@ -1,5 +1,8 @@
-import os, json, uuid, time
+import os, json, uuid, time, errno, logging
 from shutil import move
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO,  # avoid getting log from 3rd party module
+                    format='box-com plugin %(levelname)s - %(message)s')
 
 class CacheHandler():
     def __init__(self, cache_file_name):
@@ -39,9 +42,9 @@ class CacheHandler():
                 file_handle.close()
             move(temporary_location, self.cache_location)
         except (IOError, ValueError, EOFError) as e:
-            print('Error while saving cache:' + e)
+            logger.error('Error while saving cache:' + e)
         except:
-            print('Error while saving cache')
+            logger.error('Error while saving cache')
 
     def create_dir(self,filename):
         if not os.path.exists(os.path.dirname(filename)):

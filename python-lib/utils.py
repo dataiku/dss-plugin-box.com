@@ -11,9 +11,9 @@ class Utils():
         elts = path.split('/')
         elts = [e for e in elts if len(e) > 0]
         return '/' + '/'.join(elts)
-    def get_full_path(self, path):
+    def get_full_path(self, root, path):
         normalized_path = self.get_normalized_path(path)
         if normalized_path == '/':
-            return self.root_lnt
+            return self.get_normalized_path(root)
         else:
-            return self.root_lnt + normalized_path
+            return self.get_normalized_path(root) + normalized_path

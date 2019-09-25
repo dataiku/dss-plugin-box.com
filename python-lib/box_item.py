@@ -21,7 +21,7 @@ class BoxItem(Utils):
         self.modified_at = None
         self.size = 0
         self.cache = CacheHandler(cache_file_name)
-        self.root_lnt = self.get_normalized_path(root)
+        self.root = root
         self.client = client
 
     def get_by_path(self, path, create_if_not_exist = False, force_no_cache = False):
@@ -144,7 +144,7 @@ class BoxItem(Utils):
         return ret
 
     def get_children(self):
-        full_path = self.get_full_path(self.path)
+        full_path = self.get_full_path(self.root, self.path)
         children = []
         for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
             sub_path = self.get_normalized_path(os.path.join(full_path, sub.name))
