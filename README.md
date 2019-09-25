@@ -70,6 +70,8 @@ From the connector's *Settings > Files* panel, you should now be able to browser
 
 ![](images/browsing.png)
 
+Browsing speed can be slightly increased by activating the cache option. However this is not available in MUS context. 
+
 ## Write mode
 
 - Edit the `DATADIR/config/dip.properties` file and add the following key: `dku.datasets.external.no_connection.allowClear=true`

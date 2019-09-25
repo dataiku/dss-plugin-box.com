@@ -6,16 +6,16 @@
     },
     "params": [
         {
-            "name":"box_com_connection",
-            "label":"Define a connection",
-            "type":"PRESET",
-            "parameterSetId":"box-set-id"
+            "name": "box_com_connection",
+            "label": "Define a connection",
+            "type": "PRESET",
+            "parameterSetId": "box-set-id"
         },
         {
             "name": "cache_enabled",
             "type": "BOOLEAN",
-            "label" : "Use cache to speed up",
-            "defaultValue": true
+            "label": "Use cache to speed up",
+            "defaultValue": false
         }
     ]
 }
