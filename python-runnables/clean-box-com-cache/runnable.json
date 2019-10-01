@@ -7,10 +7,10 @@
     "impersonate": false,
     "params": [
         {
-            "name":"box_com_connection",
-            "label":"Define a connection",
-            "type":"PRESET",
-            "parameterSetId":"box-set-id"
+            "name": "box_com_connection",
+            "label": "Connection",
+            "type": "PRESET",
+            "parameterSetId": "box-set-id"
         }
     ],
     "permissions": [],

@@ -2,10 +2,10 @@ import os, json, utils, shutil, time, string
 from StringIO import StringIO
 from datetime import datetime
 from cache_handler import CacheHandler
-from utils import Utils
+from utils import get_full_path, get_rel_path, get_normalized_path
 from boxsdk.exception import BoxAPIException
 
-class BoxItem(Utils):
+class BoxItem():
 
     BOX_FOLDER = "folder"
     BOX_FILE = "file"
@@ -25,7 +25,7 @@ class BoxItem(Utils):
         self.client = client
 
     def get_by_path(self, path, create_if_not_exist = False, force_no_cache = False):
-        rel_path = self.get_rel_path(path)
+        rel_path = get_rel_path(path)
         if rel_path == '':
             self.set_root()
             return self
@@ -53,6 +53,7 @@ class BoxItem(Utils):
         current_path = ''
         for elt in elts:
             current_path = os.path.join(current_path, elt)
+            print('!ALX:folder get_items')
             items_iter = self.client.folder(folder_id=item_id).get_items(fields = ['modified_at','name','type','size'])
             found = False
             for item in items_iter:
@@ -77,6 +78,7 @@ class BoxItem(Utils):
         return self
 
     def get_details(self, id, type):
+        print('!ALX:folder or file get')
         if type == self.BOX_FOLDER:
             return self.client.folder(id).get(fields = ['modified_at','name','type','size'])
         elif type == self.BOX_FILE:
@@ -98,6 +100,7 @@ class BoxItem(Utils):
         new_id = None
         while new_id is None:
             try:
+                print('!ALX:folder create_subfolder')
                 new_folder = self.client.folder(self.id).create_subfolder(name)
                 new_id = self.fix_any_duplicate(name, new_folder['id'])
             except BoxAPIException as err:
@@ -138,28 +141,30 @@ class BoxItem(Utils):
         return self.type == self.BOX_FILE
 
     def get_stat(self):
-        ret = {'path': self.get_normalized_path(self.path) , 'size':self.size if self.is_file() else 0, 'isDirectory': self.is_folder()}
+        ret = {'path': get_normalized_path(self.path) , 'size':self.size if self.is_file() else 0, 'isDirectory': self.is_folder()}
         if self.modified_at is not None:
             ret["lastModified"] = self.modified_at
         return ret
 
     def get_children(self):
-        full_path = self.get_full_path(self.root, self.path)
+        full_path = get_full_path(self.root, self.path)
         children = []
+        print('!ALX:folder get_items')
         for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
-            sub_path = self.get_normalized_path(os.path.join(full_path, sub.name))
+            sub_path = get_normalized_path(os.path.join(full_path, sub.name))
             ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size}
             children.append(ret)
-            self.cache.add(self.get_rel_path(sub_path), sub.id, sub.type)
+            self.cache.add(get_rel_path(sub_path), sub.id, sub.type)
         return children
 
     def get_id(self):
         return self.id
 
     def get_as_browse(self):
-        return {'fullPath' : self.get_normalized_path(self.path), 'exists' : self.exists(), 'directory' : self.is_folder(), 'size' : self.size}
+        return {'fullPath' : get_normalized_path(self.path), 'exists' : self.exists(), 'directory' : self.is_folder(), 'size' : self.size}
 
     def get_stream(self, byte_range = None):
+        print('!ALX:file content')
         if byte_range:
             ws = self.client.file(self.id).content(byte_range = byte_range)
         else:
@@ -171,6 +176,7 @@ class BoxItem(Utils):
         sio = StringIO()
         shutil.copyfileobj(stream, sio)
         sio.seek(0)
+        print('!ALX:folder upload_stream')
         ret = self.client.folder(self.id).upload_stream(sio, file_name=file_name)
         self.id = ret.id
         self.cache.add(self.path, ret.id, ret.type)
@@ -185,6 +191,7 @@ class BoxItem(Utils):
     def delete(self):
         if self.is_file():
             try:
+                print('!ALX:file delete')
                 self.client.file(self.id).delete()
             except BoxAPIException as err:
                 if err.status == self.BOX_ERR_NOT_FOUND:
@@ -202,10 +209,12 @@ class BoxItem(Utils):
         if id is None:
             id = self.id
         try:
+            print('!ALX:folder get_item')
             for child in self.client.folder(id).get_items():
                 if child.type == self.BOX_FOLDER:
                     counter = counter + self.recursive_delete(id = child.id)
                     try: 
+                        print('!ALX:folder delete')
                         self.client.folder(child.id).delete()
                         self.cache.remove(child.id)
                         counter = counter + 1
@@ -213,6 +222,7 @@ class BoxItem(Utils):
                         pass
                 elif child.type == self.BOX_FILE:
                     try:
+                        print('!ALX:file delete')
                         self.client.file(child.id).delete()
                         self.cache.remove(child.id)
                         counter = counter + 1
@@ -231,6 +241,7 @@ class BoxItem(Utils):
             id_default_folder = self.id_default_folder(name)
             if id_default_folder != new_id:
                 try:
+                    print('!ALX:folder delete')
                     self.client.folder(new_id).delete()
                 except:
                     print('Folder deleted')
@@ -241,6 +252,7 @@ class BoxItem(Utils):
         instances = 0
         my_child = False
         try:
+            print('!ALX:folder get_item')
             for child in self.client.folder(self.id).get_items():
                 if child.name == name:
                     instances = instances + 1
@@ -252,6 +264,7 @@ class BoxItem(Utils):
 
     def id_default_folder(self,name):
         try:
+            print('!ALX:folder create_subfolder')
             probe_folder = self.client.folder(self.id).create_subfolder(name)
             return probe_folder.id
         except BoxAPIException as err:

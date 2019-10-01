@@ -1,26 +1,7 @@
 # Box.com Plugin
 This plugin provides a read connector to interact in your Dataiku DSS projects with csv documents stored on [box.com](https://www.box.com).
 
-## Install in DSS
-To install **Plugin: Box.com** in DSS, go to *Administration > Plugins > Store* and search for the plugin name.
-
-Alternatively, [Download it]() (for DSS 6+) and follow our [installation instructions](https://doc.dataiku.com/dss/latest/plugins/installing.html)
-
-## Plugin information
-
-|   |   |
-|---|---|
-| Version  | 1.0.0 |
-| Author  | Dataiku |
-| Released  | 2019-09 |
-| Last updated  | 2019-09 |
-| License  | Apache Software License |
-| Source code  | [Github](https://github.com/dataiku/dataiku-contrib/tree/master/googlesheets) |
-| Reporting issues  | [Github](https://github.com/dataiku/dataiku-contrib/issues) |
-
 ## How to use
-
-You need to install the plugin in Dataiku DSS. Go to the *Administration > Plugins* page. The plugin requires the installation of a code environment.
 
 Create a new dataset using the plugin. You have 3 parameters to fill. Click on the button **Test** & **Get schema** button. Then, **save** and **explore**.
 

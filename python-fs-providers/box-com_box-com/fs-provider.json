@@ -1,13 +1,13 @@
 {
     "meta": {
-        "label": "Filesystem provider",
-        "description": "Enables sharing between DSS and your box.com account",
+        "label": "Box.com",
+        "description": "Read and write data from/to your Box.com account",
         "icon": "icon-cloud"
     },
     "params": [
         {
             "name": "box_com_connection",
-            "label": "Define a connection",
+            "label": "Box.com connection",
             "type": "PRESET",
             "parameterSetId": "box-set-id"
         },
