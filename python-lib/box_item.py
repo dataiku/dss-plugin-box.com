@@ -53,7 +53,6 @@ class BoxItem():
         current_path = ''
         for elt in elts:
             current_path = os.path.join(current_path, elt)
-            print('!ALX:folder get_items')
             items_iter = self.client.folder(folder_id=item_id).get_items(fields = ['modified_at','name','type','size'])
             found = False
             for item in items_iter:
@@ -78,7 +77,6 @@ class BoxItem():
         return self
 
     def get_details(self, id, type):
-        print('!ALX:folder or file get')
         if type == self.BOX_FOLDER:
             return self.client.folder(id).get(fields = ['modified_at','name','type','size'])
         elif type == self.BOX_FILE:
@@ -100,7 +98,6 @@ class BoxItem():
         new_id = None
         while new_id is None:
             try:
-                print('!ALX:folder create_subfolder')
                 new_folder = self.client.folder(self.id).create_subfolder(name)
                 new_id = self.fix_any_duplicate(name, new_folder['id'])
             except BoxAPIException as err:
@@ -149,7 +146,6 @@ class BoxItem():
     def get_children(self):
         full_path = get_full_path(self.root, self.path)
         children = []
-        print('!ALX:folder get_items')
         for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
             sub_path = get_normalized_path(os.path.join(full_path, sub.name))
             ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size}
@@ -164,7 +160,6 @@ class BoxItem():
         return {'fullPath' : get_normalized_path(self.path), 'exists' : self.exists(), 'directory' : self.is_folder(), 'size' : self.size}
 
     def get_stream(self, byte_range = None):
-        print('!ALX:file content')
         if byte_range:
             ws = self.client.file(self.id).content(byte_range = byte_range)
         else:
@@ -176,7 +171,6 @@ class BoxItem():
         sio = StringIO()
         shutil.copyfileobj(stream, sio)
         sio.seek(0)
-        print('!ALX:folder upload_stream')
         ret = self.client.folder(self.id).upload_stream(sio, file_name=file_name)
         self.id = ret.id
         self.cache.add(self.path, ret.id, ret.type)
@@ -191,7 +185,6 @@ class BoxItem():
     def delete(self):
         if self.is_file():
             try:
-                print('!ALX:file delete')
                 self.client.file(self.id).delete()
             except BoxAPIException as err:
                 if err.status == self.BOX_ERR_NOT_FOUND:
@@ -209,12 +202,10 @@ class BoxItem():
         if id is None:
             id = self.id
         try:
-            print('!ALX:folder get_item')
             for child in self.client.folder(id).get_items():
                 if child.type == self.BOX_FOLDER:
                     counter = counter + self.recursive_delete(id = child.id)
                     try: 
-                        print('!ALX:folder delete')
                         self.client.folder(child.id).delete()
                         self.cache.remove(child.id)
                         counter = counter + 1
@@ -222,7 +213,6 @@ class BoxItem():
                         pass
                 elif child.type == self.BOX_FILE:
                     try:
-                        print('!ALX:file delete')
                         self.client.file(child.id).delete()
                         self.cache.remove(child.id)
                         counter = counter + 1
@@ -241,7 +231,6 @@ class BoxItem():
             id_default_folder = self.id_default_folder(name)
             if id_default_folder != new_id:
                 try:
-                    print('!ALX:folder delete')
                     self.client.folder(new_id).delete()
                 except:
                     print('Folder deleted')
@@ -252,7 +241,6 @@ class BoxItem():
         instances = 0
         my_child = False
         try:
-            print('!ALX:folder get_item')
             for child in self.client.folder(self.id).get_items():
                 if child.name == name:
                     instances = instances + 1
@@ -264,7 +252,6 @@ class BoxItem():
 
     def id_default_folder(self,name):
         try:
-            print('!ALX:folder create_subfolder')
             probe_folder = self.client.folder(self.id).create_subfolder(name)
             return probe_folder.id
         except BoxAPIException as err:

@@ -17,7 +17,6 @@ class BoxComFSProvider(FSProvider):
         if len(root) > 0 and root[0] == '/':
             root = root[1:]
         self.root = root
-        print('!ALX:__init__:{0}'.format(root))
         self.connection = client.get("box_com_connection")
         self.access_token = self.connection['access_token']
         self.cache_enabled = config.get("cache_enabled")
@@ -46,7 +45,6 @@ class BoxComFSProvider(FSProvider):
         Get the info about the object at the given path inside the provider's root, or None 
         if the object doesn't exist
         """
-        print('ALX:stat:{0}'.format(path))
         full_path = get_full_path(self.root, path)
         box_item = self.box_item.get_by_path(full_path)
         if box_item.not_exists():
@@ -64,7 +62,6 @@ class BoxComFSProvider(FSProvider):
         """
         List the file or directory at the given path, and its children (if directory)
         """
-        print('ALX:browse:{0}'.format(path))
         normalized_path = get_normalized_path(path)
         full_path = get_normalized_path(path)
         item = self.box_item.get_by_path(get_rel_path(full_path))
@@ -82,7 +79,6 @@ class BoxComFSProvider(FSProvider):
         If the prefix doesn't denote a file or folder, return None
         """
         full_path = get_full_path(self.root, path)
-        print('ALX:enumerate:{0}'.format(full_path))
         normalized_path = get_normalized_path(path)
 
         item = self.box_item.get_by_path(full_path)
@@ -97,11 +93,9 @@ class BoxComFSProvider(FSProvider):
         return paths
 
     def list_recursive(self, path, folder_id, first_non_empty):
-        print('ALX:list_recursive')
         paths = []
         if path == "/":
             path = ""
-        print('!ALX:folder get_items')
         for child in self.client.folder(folder_id).get_items(fields = ['modified_at','name','type','size']):
             if child.type == self.box_item.BOX_FOLDER:
                 paths.extend(self.list_recursive(path + '/' + child.name, child.id, first_non_empty))
@@ -115,7 +109,6 @@ class BoxComFSProvider(FSProvider):
         """
         Delete recursively from path. Return the number of deleted files (optional)
         """
-        print('ALX:delete_recursive:{0}'.format(path))
         full_path = get_full_path(self.root, path)
         item = self.box_item.get_by_path(full_path, force_no_cache = True)
         if item.not_exists():
@@ -129,12 +122,10 @@ class BoxComFSProvider(FSProvider):
         """
         Move a file or folder to a new path inside the provider's root. Return false if the moved file didn't exist
         """
-        print('ALX:move:{0}'.format(from_path))
         raise Exception('move not implemented for box.com')
 
     def read(self, path, stream, limit):
         full_path = get_full_path(self.root, path)
-        print('ALX:read:{0} limit={1}'.format(full_path, limit))
         byte_range = None
 
         if limit is not None and limit is not "-1":
@@ -151,7 +142,6 @@ class BoxComFSProvider(FSProvider):
         """
         Write the stream to the object denoted by path into the stream
         """
-        print('ALX:write:{0}'.format(path))
         full_path = get_full_path(self.root, path)
         item = self.box_item.create_path(full_path, force_no_cache = True)
         if item.is_folder():
