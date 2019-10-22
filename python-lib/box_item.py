@@ -1,5 +1,10 @@
 import os, json, utils, shutil, time, string
-from StringIO import StringIO
+
+try:
+    from BytesIO import BytesIO ## for Python 2
+except ImportError:
+    from io import BytesIO ## for Python 3
+
 from datetime import datetime
 from cache_handler import CacheHandler
 from utils import get_full_path, get_rel_path, get_normalized_path
@@ -164,11 +169,11 @@ class BoxItem():
             ws = self.client.file(self.id).content(byte_range = byte_range)
         else:
             ws = self.client.file(self.id).content()
-        return StringIO(ws)
+        return BytesIO(ws)
 
     def write_stream(self, stream):
         file_name = self.path.split('/')[-1]
-        sio = StringIO()
+        sio = BytesIO()
         shutil.copyfileobj(stream, sio)
         sio.seek(0)
         ret = self.client.folder(self.id).upload_stream(sio, file_name=file_name)
@@ -205,8 +210,7 @@ class BoxItem():
             for child in self.client.folder(id).get_items():
                 if child.type == self.BOX_FOLDER:
                     counter = counter + self.recursive_delete(id = child.id)
-                    try: 
-                        self.client.folder(child.id).delete()
+                    try:
                         self.cache.remove(child.id)
                         counter = counter + 1
                     except:
@@ -217,7 +221,7 @@ class BoxItem():
                         self.cache.remove(child.id)
                         counter = counter + 1
                     except:
-                        print('File already deleted')
+                        pass # File already deleted
         except:
             print('Folder already deleted')
         self.cache.remove(self.id)
@@ -233,7 +237,7 @@ class BoxItem():
                 try:
                     self.client.folder(new_id).delete()
                 except:
-                    print('Folder deleted')
+                    pass # Folder deleted
                 return id_default_folder
         return new_id
 
@@ -247,7 +251,7 @@ class BoxItem():
                     if child.id == new_id:
                         my_child = True
         except BoxAPIException as err:
-            raise Exception('Error while accessing box.com item:{0}'.format(err))
+            raise Exception('Error while accessing box.com item:{0}'.format(err)) # todo: fix 404 not found here
         return (instances > 1) and my_child
 
     def id_default_folder(self,name):

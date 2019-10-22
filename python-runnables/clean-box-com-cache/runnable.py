@@ -9,7 +9,7 @@ class CleanCache(Runnable):
         self.plugin_config = plugin_config
         self.connection = self.plugin_config.get("box_com_connection")
         self.access_token = self.connection['access_token']
-        self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token).hexdigest()
+        self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token.encode('utf-8')).hexdigest()
         
     def get_progress_target(self):
         return None

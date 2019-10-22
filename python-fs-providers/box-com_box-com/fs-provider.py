@@ -21,7 +21,7 @@ class BoxComFSProvider(FSProvider):
         self.access_token = self.connection['access_token']
         self.cache_enabled = config.get("cache_enabled")
         if self.cache_enabled:
-            cache_file_name = hashlib.sha1(self.access_token).hexdigest()
+            cache_file_name = hashlib.sha1(self.access_token.encode('utf-8')).hexdigest()
         else:
             cache_file_name = None
         auth = OAuth2(

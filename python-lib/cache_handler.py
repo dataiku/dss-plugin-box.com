@@ -74,7 +74,7 @@ class CacheHandler():
     def remove(self, id):
         if not self.cache_enabled:
             return 0
-        for key, value in self.cache.iteritems():
+        for key, value in self.cache.items():
             if value["item_id"] == id:
                 self.removed.append(key)
                 self.cache.pop(key, None)
