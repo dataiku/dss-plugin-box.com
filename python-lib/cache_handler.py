@@ -21,7 +21,7 @@ class CacheHandler():
             with open(self.cache_location, "r") as file_handle:
                 self.cache = json.load(file_handle)
                 file_handle.close()
-        except:
+        except Exception as error:
             self.cache = {}
 
     def reset(self):
@@ -41,19 +41,20 @@ class CacheHandler():
                 file_handle.write(json.dumps(self.cache))
                 file_handle.close()
             move(temporary_location, self.cache_location)
-        except (IOError, ValueError, EOFError) as e:
-            logger.error('Error while saving cache:' + e)
-        except:
-            logger.error('Error while saving cache')
+        except (IOError, ValueError, EOFError) as error:
+            logger.error('Error while saving cache:' + error)
+        except Exception as error:
+            logger.error('Error while saving cache' + error)
 
     def create_dir(self,filename):
         if not os.path.exists(os.path.dirname(filename)):
             try:
                 os.makedirs(os.path.dirname(filename))
                 return 1
-            except OSError as exc: # Guard against race condition
-                if exc.errno != errno.EEXIST:
+            except OSError as error: # Guard against race condition
+                if error.errno != errno.EEXIST:
                     raise
+                logger.info("Error :" + error)
                 return 0
         return 0
 

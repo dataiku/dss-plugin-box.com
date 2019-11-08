@@ -1,4 +1,4 @@
-import os, json, utils, shutil, time, string
+import os, json, utils, shutil, time, string, logging
 
 try:
     from BytesIO import BytesIO ## for Python 2
@@ -9,6 +9,11 @@ from datetime import datetime
 from cache_handler import CacheHandler
 from utils import get_full_path, get_rel_path, get_normalized_path
 from boxsdk.exception import BoxAPIException
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO,
+                    format='box-com plugin %(levelname)s - %(message)s')
 
 class BoxItem():
 
@@ -45,9 +50,9 @@ class BoxItem():
                 self.type = item_type
                 self.size = (item.size if self.is_file() else 0)
                 return self
-            except:
+            except Exception as error:
+                logger.info("Exception:" + error)
                 self.cache.reset()
-                pass
 
         # Start iterating path from root id "0"
         item_id = '0'
@@ -148,14 +153,15 @@ class BoxItem():
             ret["lastModified"] = self.modified_at
         return ret
 
-    def get_children(self):
+    def get_children(self, internal_path):
         full_path = get_full_path(self.root, self.path)
+        intra_path = self.path.replace('/'+self.root, '')
         children = []
         for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
-            sub_path = get_normalized_path(os.path.join(full_path, sub.name))
+            sub_path = get_normalized_path(os.path.join(internal_path, sub.name))
             ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size}
             children.append(ret)
-            self.cache.add(get_rel_path(sub_path), sub.id, sub.type)
+            self.cache.add(get_rel_path(sub.name), sub.id, sub.type)
         return children
 
     def get_id(self):
@@ -213,17 +219,18 @@ class BoxItem():
                     try:
                         self.cache.remove(child.id)
                         counter = counter + 1
-                    except:
-                        pass
+                    except Exception as error:
+                        logger.info("Exception:" + error)
                 elif child.type == self.BOX_FILE:
                     try:
                         self.client.file(child.id).delete()
                         self.cache.remove(child.id)
                         counter = counter + 1
-                    except:
-                        pass # File already deleted
-        except:
-            print('Folder already deleted')
+                    except Exception as error:
+                        # File already deleted
+                        logger.info("Exception:" + error)
+        except Exception as error:
+            logger.info("Folder already deleted")
         self.cache.remove(self.id)
         return counter
 
@@ -236,8 +243,8 @@ class BoxItem():
             if id_default_folder != new_id:
                 try:
                     self.client.folder(new_id).delete()
-                except:
-                    pass # Folder deleted
+                except Exception as error:
+                    logger.info("Folder already deleted:" + error)
                 return id_default_folder
         return new_id
 
@@ -251,7 +258,7 @@ class BoxItem():
                     if child.id == new_id:
                         my_child = True
         except BoxAPIException as err:
-            raise Exception('Error while accessing box.com item:{0}'.format(err)) # todo: fix 404 not found here
+            raise Exception('Error while accessing box.com item:{0}'.format(err))
         return (instances > 1) and my_child
 
     def id_default_folder(self,name):

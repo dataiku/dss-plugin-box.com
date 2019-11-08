@@ -49,8 +49,7 @@ class BoxComFSProvider(FSProvider):
         box_item = self.box_item.get_by_path(full_path)
         if box_item.not_exists():
             return None
-        ret = box_item.get_stat()
-        return ret
+        return box_item.get_stat()
 
     def set_last_modified(self, path, last_modified):
         """
@@ -63,12 +62,12 @@ class BoxComFSProvider(FSProvider):
         List the file or directory at the given path, and its children (if directory)
         """
         normalized_path = get_normalized_path(path)
-        full_path = get_normalized_path(path)
+        full_path = get_full_path(self.root, path)
         item = self.box_item.get_by_path(get_rel_path(full_path))
         if item.not_exists():
             return {'fullPath' : normalized_path, 'exists' : False}
         if item.is_folder():
-            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : item.get_children()}
+            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : item.get_children(normalized_path)}
         else:
             return item.get_as_browse()
 
