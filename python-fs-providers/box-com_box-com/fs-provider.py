@@ -121,7 +121,36 @@ class BoxComFSProvider(FSProvider):
         """
         Move a file or folder to a new path inside the provider's root. Return false if the moved file didn't exist
         """
-        raise Exception('move not implemented for box.com')
+        full_from_path = get_full_path(self.root, from_path)
+        full_to_path = get_full_path(self.root, to_path)
+        from_base, from_item_name = os.path.split(full_from_path)
+        to_base, to_item_name = os.path.split(full_to_path)
+
+        from_item = self.box_item.get_by_path(full_from_path, force_no_cache = True)
+
+        if from_item.not_exists():
+            return False
+
+        from_item_id = from_item.get_id()
+        from_item_is_folder = from_item.is_folder()
+
+        to_item =  self.box_item.get_by_path(full_to_path, force_no_cache = True)
+        if to_item.not_exists():
+            to_item =  self.box_item.get_by_path(to_base, force_no_cache = True)
+
+        destination_folder = self.client.folder(to_item.get_id())
+
+        if from_item_is_folder:
+            source = self.client.folder(from_item_id)
+        else:
+            source = self.client.file(from_item_id)
+
+        if from_item_name == to_item_name:
+            source.move(destination_folder)
+        else:
+            source.rename(to_item_name)
+
+        return True
 
     def read(self, path, stream, limit):
         full_path = get_full_path(self.root, path)

@@ -51,7 +51,7 @@ class BoxItem():
                 self.size = (item.size if self.is_file() else 0)
                 return self
             except Exception as error:
-                logger.info("Exception:" + error)
+                logger.info("Exception:{}".format(error))
                 self.cache.reset()
 
         # Start iterating path from root id "0"
@@ -220,7 +220,7 @@ class BoxItem():
                         self.cache.remove(child.id)
                         counter = counter + 1
                     except Exception as error:
-                        logger.info("Exception:" + error)
+                        logger.info("Exception:{}".format(error))
                 elif child.type == self.BOX_FILE:
                     try:
                         self.client.file(child.id).delete()
@@ -228,7 +228,7 @@ class BoxItem():
                         counter = counter + 1
                     except Exception as error:
                         # File already deleted
-                        logger.info("Exception:" + error)
+                        logger.info("Exception:{}".format(error))
         except Exception as error:
             logger.info("Folder already deleted")
         self.cache.remove(self.id)
@@ -244,7 +244,7 @@ class BoxItem():
                 try:
                     self.client.folder(new_id).delete()
                 except Exception as error:
-                    logger.info("Folder already deleted:" + error)
+                    logger.info("Folder already deleted:{}".format(error))
                 return id_default_folder
         return new_id
 
