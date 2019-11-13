@@ -18,7 +18,7 @@ In order to use the plugin, the administrator of the box.com account will have t
 
 ![](images/app_config.png)
 
-5. Go to the plugin's setting page and create a preset. In the preset, paste the access token. 
+5. Go to the plugin's setting page (**Plugins > Installed > Box.com > Settings > Box.com connection** or **Project > Settings> Plugins presets**). Create a new preset, and paste the access token copied from stage 4.
 
 ![](images/create_preset.png)
 
