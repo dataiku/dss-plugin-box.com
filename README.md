@@ -59,7 +59,7 @@ Browsing speed can be slightly increased by activating the cache option. However
 - Share an empty directory with the box.com dss app. It is important that it does not contain data you want to keep: **the entire structure contained inside this directory can be deleted by the plugin**.
 - In the flow, first create your target box.com dataset, by selecting the box.com plugin in the dataset list.
 - Browse to your target directory, name this new dataset and press **create**
-- If the following message appears : `An invalid argument has been encountered : Missing parameters for CSV` got to the dataset *Settings > Format / Preview* and set *Quoting style*
+- If the following message appears : `An invalid argument has been encountered : Missing parameters for CSV` got to the dataset *Settings > Format / Preview* and make sure that *Type*, *Separator*, *Quoting style*, *Quoting character*, *Escape character* are properly set.
 
 ![](images/set_quoting_style.png)
 
