@@ -86,7 +86,7 @@ class BoxComFSProvider(FSProvider):
 
         paths = []
         if item.is_folder():
-            paths = self.list_recursive(path, item.id, first_non_empty)
+            paths = self.list_recursive(normalized_path, item.id, first_non_empty)
         else:
             paths.append({'path':normalized_path.split("/")[-1], 'size':item.size, 'lastModified':int(0) * 1000})
         return paths
