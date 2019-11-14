@@ -127,6 +127,14 @@ class BoxItem():
         self.size = 0
         return self
 
+    def get_last_modified(self, item = None):
+        if item is None:
+            return self.modified_at
+        elif "modified_at" in item:
+            return self.format_date(item["modified_at"]) 
+        else:
+            return
+
     def format_date(self, date):
         if date is not None:
             utc_time = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S-%f:00")
@@ -159,7 +167,7 @@ class BoxItem():
         children = []
         for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
             sub_path = get_normalized_path(os.path.join(internal_path, sub.name))
-            ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size}
+            ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size, 'lastModified' : self.get_last_modified(sub)}
             children.append(ret)
             self.cache.add(get_rel_path(sub.name), sub.id, sub.type)
         return children
@@ -168,7 +176,7 @@ class BoxItem():
         return self.id
 
     def get_as_browse(self):
-        return {'fullPath' : get_normalized_path(self.path), 'exists' : self.exists(), 'directory' : self.is_folder(), 'size' : self.size}
+        return {'fullPath' : get_normalized_path(self.path), 'exists' : self.exists(), 'directory' : self.is_folder(), 'size' : self.size, 'lastModified' : self.get_last_modified()}
 
     def get_stream(self, byte_range = None):
         if byte_range:

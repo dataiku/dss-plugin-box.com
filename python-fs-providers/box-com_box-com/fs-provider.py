@@ -67,10 +67,10 @@ class BoxComFSProvider(FSProvider):
         if item.not_exists():
             return {'fullPath' : normalized_path, 'exists' : False}
         if item.is_folder():
-            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : item.get_children(normalized_path)}
+            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : item.get_children(normalized_path), 'lastModified' : item.get_last_modified()}
         else:
             return item.get_as_browse()
-
+    
     def enumerate(self, path, first_non_empty):
         """
         Enumerate files recursively from prefix. If first_non_empty, stop at the first non-empty file.
