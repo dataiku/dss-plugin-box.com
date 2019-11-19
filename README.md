@@ -1,68 +1,8 @@
 # Box.com Plugin
-This plugin provides a read connector to interact in your Dataiku DSS projects with csv documents stored on [box.com](https://www.box.com).
 
-## How to use
+This Dataiku DSS plugin provides a read and write connector to interact with documents stored on [box.com](https://www.box.com).
 
-Create a new dataset using the plugin. You have 3 parameters to fill. Click on the button **Test** & **Get schema** button. Then, **save** and **explore**.
+Documentation: https://www.dataiku.com/dss/plugins/info/box-com.html
 
-In order to use the plugin, the administrator of the box.com account will have to create an box.com app: 
-
-1. As administrator, go to your [box.com account page](https://app.box.com/account) and upgrade to developper.
-2. From the administrator's [developers console](https://app.box.com/developers/console), create a new Partner Integration.
-
-![](images/select_app_type.png)
-
-3. Name your app.
-> People given access to this app will be able to access all files shared to it. Where access to dataset must be restricted to a given group, make and name a separate app for this purpose.
-4. From the App configuration panel, create and copy a secondary access token.
-
-![](images/app_config.png)
-
-5. Go to the plugin's setting page (**Plugins > Installed > Box.com > Settings > Box.com connection** or **Project > Settings> Plugins presets**). Create a new preset, and paste the access token copied from stage 4.
-
-![](images/create_preset.png)
-
-Once you have the access token, you will be able to retrieve the app's sharing email address. To do so:
-1. Inside a DSS project, go to the **Macros** menu
-
-![](images/macro_menu.png)
-
-2. Select the **Get Box.com sharing email** macro
-
-![](images/select_macro.png)
-
-3. Pick a previously created preset, or fill in the access token using **Manually defined**. Then press **Run Macro**
-
-4. Copy the email address returned.
-
-![](images/sharing_email_address.png)
-
-To make files visible to DSS, you will need to share them from your box account with this email address.
-
-Once this is done, you can create a new dataset using the box.com plugin. First, create the dataset by picking box.com in the dataset section :
-
-![](images/create_dataset.png)
-
-Choose the Filesystem provider, and fill in the details copied from the app configuration panel.
-
-![](images/plugin.png)
-
-From the connector's *Settings > Files* panel, you should now be able to browser your box directory and select the file or directory you want to access.
-
-![](images/browsing.png)
-
-Browsing speed can be slightly increased by activating the cache option. However this is not available in MUS context. 
-
-## Write mode
-
-- Edit the `DATADIR/config/dip.properties` file and add the following key: `dku.datasets.external.no_connection.allowClear=true`
-- Share an empty directory with the box.com dss app. It is important that it does not contain data you want to keep: **the entire structure contained inside this directory can be deleted by the plugin**.
-- In the flow, first create your target box.com dataset, by selecting the box.com plugin in the dataset list.
-- Browse to your target directory, name this new dataset and press **create**
-- If the following message appears : `An invalid argument has been encountered : Missing parameters for CSV` got to the dataset *Settings > Format / Preview* and make sure that *Type*, *Separator*, *Quoting style*, *Quoting character*, *Escape character* are properly set.
-
-![](images/set_quoting_style.png)
-
-- Pick the source dataset and create a sync recipe from it. Select *Use existing dataset* and pick your target box.com dataset. Finally **Create recipe**.
-
-![](images/create_sync.png)
+### Licence
+This plugin is distributed under the Apache License version 2.0
