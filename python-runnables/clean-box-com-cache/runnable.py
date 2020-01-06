@@ -1,5 +1,5 @@
 from dataiku.runnables import Runnable
-import os
+import os, hashlib
 
 class CleanCache(Runnable):
 
@@ -7,8 +7,9 @@ class CleanCache(Runnable):
         self.project_key = project_key
         self.config = config
         self.plugin_config = plugin_config
-        self.client_id = self.config.get("client_id")
-        self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + self.client_id
+        self.connection = self.plugin_config.get("box_com_connection")
+        self.access_token = self.connection['access_token']
+        self.cache_location = os.environ["DIP_HOME"] + '/caches/plugins/box-com/' + hashlib.sha1(self.access_token.encode('utf-8')).hexdigest()
         
     def get_progress_target(self):
         return None
@@ -16,7 +17,7 @@ class CleanCache(Runnable):
     def run(self, progress_callback):
         if os.path.isfile(self.cache_location):
             os.remove(self.cache_location)
-            return "Done !"
+            return "Done!"
         else:
             return "Error: no cache found"
         

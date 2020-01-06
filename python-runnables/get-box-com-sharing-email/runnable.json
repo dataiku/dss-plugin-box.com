@@ -7,28 +7,10 @@
     "impersonate": false,
     "params": [
         {
-            "name": "client_id",
-            "label": "User ID",
-            "type": "STRING",
-            "description": "Your Box.com user ID",
-            "defaultValue": "${box_user_id}",
-            "mandatory": true
-        },
-        {
-            "name": "client_secret",
-            "label": "Client ID",
-            "type": "STRING",
-            "description": "The DSS Box.com App client ID",
-            "defaultValue": "${box_client_id}",
-            "mandatory": true
-        },
-        {
-            "name": "access_token",
-            "label": "Access token",
-            "type": "STRING",
-            "description": "The access token generated for the DSS box.com app",
-            "defaultValue": "${box_access_token}",
-            "mandatory": true
+            "name": "box_com_connection",
+            "label": "Connection",
+            "type": "PRESET",
+            "parameterSetId": "box-set-id"
         }
     ],
     "permissions": [],
