@@ -31,15 +31,9 @@ class BoxComFSProvider(FSProvider):
         )
         self.client = Client(auth)
         self.user = self.client.user().get()
-<<<<<<< HEAD
-        self.box_item = BoxItem(config, root, self.client)
-        self.box_item.check_path_format(self.root_lnt)
-    
-=======
         self.box_item = BoxItem(cache_file_name, root, self.client)
         self.box_item.check_path_format(get_normalized_path(root))
 
->>>>>>> feature/write-mode
     def close(self):
         """
         Perform any necessary cleanup
