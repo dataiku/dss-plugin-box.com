@@ -6,10 +6,34 @@
     },
     "params": [
         {
+            "name": "auth_type",
+            "label": "Type of authentication",
+            "type": "SELECT",
+            "defaultValue": "token",
+            "selectChoices": [
+                {
+                    "value": "token",
+                    "label": "Access token"
+                },
+                {
+                    "value": "oauth",
+                    "label": "Box.com Single Sign On"
+                }
+            ]
+        },
+        {
             "name": "box_com_connection",
             "label": "Box.com connection",
             "type": "PRESET",
-            "parameterSetId": "box-set-id"
+            "parameterSetId": "box-set-id",
+            "visibilityCondition": "model.auth_type == 'token'"
+        },
+        {
+            "name": "oauth_login",
+            "label": "Box.com Single Sign On",
+            "type": "PRESET",
+            "parameterSetId": "oauth-login",
+            "visibilityCondition": "model.auth_type == 'oauth'"
         },
         {
             "name": "cache_enabled",
