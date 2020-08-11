@@ -1,19 +1,24 @@
-import os, json, utils, shutil, time, string, logging
+import os
+import shutil
+import time
+import string
+import logging
 
 try:
-    from BytesIO import BytesIO ## for Python 2
+    from BytesIO import BytesIO  # for Python 2
 except ImportError:
-    from io import BytesIO ## for Python 3
+    from io import BytesIO  # for Python 3
 
 from datetime import datetime
 from cache_handler import CacheHandler
-from utils import get_full_path, get_rel_path, get_normalized_path
+from utils import get_rel_path, get_normalized_path
 from boxsdk.exception import BoxAPIException
 
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
                     format='box-com plugin %(levelname)s - %(message)s')
+
 
 class BoxItem():
 
@@ -34,7 +39,7 @@ class BoxItem():
         self.root = root
         self.client = client
 
-    def get_by_path(self, path, create_if_not_exist = False, force_no_cache = False):
+    def get_by_path(self, path, create_if_not_exist=False, force_no_cache=False):
         rel_path = get_rel_path(path)
         if rel_path == '':
             self.set_root()
@@ -51,7 +56,7 @@ class BoxItem():
                 self.size = (item.size if self.is_file() else 0)
                 return self
             except Exception as error:
-                logger.info("Exception:{}".format(error))
+                logger.info("Exception: {}".format(error))
                 self.cache.reset()
 
         # Start iterating path from root id "0"
@@ -59,11 +64,11 @@ class BoxItem():
         item_type = self.BOX_FOLDER
 
         elts = rel_path.split('/')
-        
+
         current_path = ''
         for elt in elts:
             current_path = os.path.join(current_path, elt)
-            items_iter = self.client.folder(folder_id=item_id).get_items(fields = ['modified_at','name','type','size'])
+            items_iter = self.client.folder(folder_id=item_id).get_items(fields=['modified_at', 'name', 'type', 'size'])
             found = False
             for item in items_iter:
                 if item.name == elt:
@@ -76,7 +81,7 @@ class BoxItem():
                     self.cache.add(current_path, item.id, item.type)
                     found = True
                     break
-        
+
             if not found:
                 if create_if_not_exist:
                     new_folder = self.create_subfolder(elt)
@@ -88,9 +93,9 @@ class BoxItem():
 
     def get_details(self, id, type):
         if type == self.BOX_FOLDER:
-            return self.client.folder(id).get(fields = ['modified_at','name','type','size'])
+            return self.client.folder(id).get(fields=['modified_at', 'name', 'type', 'size'])
         elif type == self.BOX_FILE:
-            return self.client.file(id).get(fields = ['modified_at','name','type','size'])
+            return self.client.file(id).get(fields=['modified_at', 'name', 'type', 'size'])
 
     def set_root(self):
         self.id = "0"
@@ -115,7 +120,6 @@ class BoxItem():
                     if err.code == self.BOX_ERR_RESERVED:
                         # Item name is reserved but there is no ID yet, so we have to loop until we get a BOX_ERR_DUPLICATE
                         time.sleep(1)
-                        pass
                     elif err.code == self.BOX_ERR_DUPLICATE:
                         new_id = err.context_info['conflicts'][0]['id']
                     else:
@@ -127,11 +131,11 @@ class BoxItem():
         self.size = 0
         return self
 
-    def get_last_modified(self, item = None):
+    def get_last_modified(self, item=None):
         if item is None:
             return self.modified_at
         elif "modified_at" in item:
-            return self.format_date(item["modified_at"]) 
+            return self.format_date(item["modified_at"])
         else:
             return
 
@@ -144,7 +148,7 @@ class BoxItem():
             return None
 
     def not_exists(self):
-        return (self.id == None)
+        return (self.id is None)
 
     def exists(self):
         return (self.id is not None)
@@ -156,18 +160,22 @@ class BoxItem():
         return self.type == self.BOX_FILE
 
     def get_stat(self):
-        ret = {'path': get_normalized_path(self.path) , 'size':self.size if self.is_file() else 0, 'isDirectory': self.is_folder()}
+        ret = {'path': get_normalized_path(self.path), 'size': self.size if self.is_file() else 0, 'isDirectory': self.is_folder()}
         if self.modified_at is not None:
             ret["lastModified"] = self.modified_at
         return ret
 
     def get_children(self, internal_path):
-        full_path = get_full_path(self.root, self.path)
-        intra_path = self.path.replace('/'+self.root, '')
         children = []
-        for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
+        for sub in self.client.folder(self.id).get_items(fields=['modified_at', 'name', 'type', 'size']):
             sub_path = get_normalized_path(os.path.join(internal_path, sub.name))
-            ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size, 'lastModified' : self.get_last_modified(sub)}
+            ret = {
+                'fullPath': sub_path,
+                'exists': True,
+                'directory': sub.type == self.BOX_FOLDER,
+                'size': sub.size,
+                'lastModified': self.get_last_modified(sub)
+            }
             children.append(ret)
             self.cache.add(get_rel_path(sub.name), sub.id, sub.type)
         return children
@@ -176,11 +184,17 @@ class BoxItem():
         return self.id
 
     def get_as_browse(self):
-        return {'fullPath' : get_normalized_path(self.path), 'exists' : self.exists(), 'directory' : self.is_folder(), 'size' : self.size, 'lastModified' : self.get_last_modified()}
+        return {
+            'fullPath': get_normalized_path(self.path),
+            'exists': self.exists(),
+            'directory': self.is_folder(),
+            'size': self.size,
+            'lastModified': self.get_last_modified()
+        }
 
-    def get_stream(self, byte_range = None):
+    def get_stream(self, byte_range=None):
         if byte_range:
-            ws = self.client.file(self.id).content(byte_range = byte_range)
+            ws = self.client.file(self.id).content(byte_range=byte_range)
         else:
             ws = self.client.file(self.id).content()
         return BytesIO(ws)
@@ -195,9 +209,9 @@ class BoxItem():
         self.cache.add(self.path, ret.id, ret.type)
         return self
 
-    def create_path(self, path, force_no_cache = False):
+    def create_path(self, path, force_no_cache=False):
         target_path = '/'.join(path.split('/')[:-1])
-        ret = self.get_by_path(target_path, create_if_not_exist=True, force_no_cache = force_no_cache)
+        ret = self.get_by_path(target_path, create_if_not_exist=True, force_no_cache=force_no_cache)
         ret.path = path
         return ret
 
@@ -216,14 +230,14 @@ class BoxItem():
         if self.is_folder():
             return self.recursive_delete()
 
-    def recursive_delete(self, id = None):
+    def recursive_delete(self, id=None):
         counter = 0
         if id is None:
             id = self.id
         try:
             for child in self.client.folder(id).get_items():
                 if child.type == self.BOX_FOLDER:
-                    counter = counter + self.recursive_delete(id = child.id)
+                    counter = counter + self.recursive_delete(id=child.id)
                     try:
                         self.cache.remove(child.id)
                         counter = counter + 1
@@ -238,7 +252,7 @@ class BoxItem():
                         # File already deleted
                         logger.info("Exception:{}".format(error))
         except Exception as error:
-            logger.info("Folder already deleted")
+            logger.info("Folder already deleted: {}".format(error))
         self.cache.remove(self.id)
         return counter
 
@@ -246,7 +260,7 @@ class BoxItem():
         # Several plugin instances creating the same folder on box.com can lead to duplicate folder names
         if self.is_duplicated(name, new_id):
             self.cache.reset()
-            time.sleep(1) # waiting for dust to settle on box.com side
+            time.sleep(1)  # waiting for dust to settle on box.com side
             id_default_folder = self.id_default_folder(name)
             if id_default_folder != new_id:
                 try:
@@ -269,7 +283,7 @@ class BoxItem():
             raise Exception('Error while accessing box.com item:{0}'.format(err))
         return (instances > 1) and my_child
 
-    def id_default_folder(self,name):
+    def id_default_folder(self, name):
         try:
             probe_folder = self.client.folder(self.id).create_subfolder(name)
             return probe_folder.id
@@ -284,7 +298,7 @@ class BoxItem():
         return None
 
     def check_path_format(self, path):
-        special_names = [".",".."]
+        special_names = [".", ".."]
         if not all(c in string.printable for c in path):
             raise Exception('The path contains non-printable char(s)')
         for element in path.split('/'):

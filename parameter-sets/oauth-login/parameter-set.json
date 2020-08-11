@@ -1,0 +1,33 @@
+{
+    "meta": {
+        "label": "Box.com Single Sign On",
+        "description": "",
+        "icon": "icon-cloud"
+    },
+    "defaultDefinableInline": true,
+    "defaultDefinableAtProjectLevel": true,
+    "pluginParams": [],
+    "params": [
+        {
+            "name": "boxcom_oauth",
+            "type": "CREDENTIAL_REQUEST",
+            "label": "Box.com Single Sign On",
+            "credentialRequestSettings": {
+                "type": "OAUTH2",
+                "oauth2Flow": "authorization_code",
+                "oauth2Provider": "AZURE",
+                "authorizationEndpoint": "https://account.box.com/api/oauth2/authorize",
+                "tokenEndpoint": "https://api.box.com/oauth2/token",
+                "scope": "root_readwrite"
+            }
+        },
+        {
+            "name": "enterprise_id",
+            "label": "Company name",
+            "type": "STRING",
+            "description": "Only for private API",
+            "visibilityCondition": false,
+            "defaultValue": null
+        }
+    ]
+}

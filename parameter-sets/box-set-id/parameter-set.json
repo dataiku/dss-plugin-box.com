@@ -13,6 +13,14 @@
             "type": "PASSWORD",
             "description": "Generated on Box.com for use in DSS",
             "mandatory": true
+        },
+        {
+            "name": "enterprise_id",
+            "label": "Company name",
+            "type": "STRING",
+            "description": "Only for private API",
+            "visibilityCondition": false,
+            "defaultValue": null
         }
     ]
 }
