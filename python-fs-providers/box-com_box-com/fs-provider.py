@@ -7,6 +7,76 @@ from box_item import BoxItem
 from utils import get_full_path, get_rel_path, get_normalized_path
 
 
+# The DefaultNetwork of box.com logs all network queries and responses, INCLUDING CONTENT
+# This is crazy but it is how it is, and it of course lead to incredible disk usage
+# and various failures because these insane log lines can find their way to a LogTail in DSS
+#
+# The DefaultNetwork has provision to avoid logging when the response is a stream
+# (see response_as_stream in DefaultNetworkResponse), but boxsdk.object.file always uses
+# the .content instead of the .raw, so it always goes through logging
+#
+# So we override the DefaultNetwork's log function to avoid logging big things
+#
+# Note: another option would be to try to use response_as_stream instead, but it would
+# require rewrapping boxsdk.object.file, so looks more dangerous
+MAX_LOGGED_RESPONSE_SIZE = 2048
+
+from boxsdk.network.default_network import DefaultNetwork, DefaultNetworkResponse
+from boxsdk.session.session import AuthorizedSession
+from six import text_type
+from pprint import pformat
+from boxsdk.util.log import sanitize_dictionary
+
+class LessVerboseLoggingNetwork(DefaultNetwork):
+    @property
+    def network_response_constructor(self):
+        return LessVerboseLoggingNetworkResponse
+
+class LessVerboseLoggingNetworkResponse(DefaultNetworkResponse):
+    def log(self, can_safely_log_content=False):
+        if self._did_log:
+            return
+        self._did_log = True
+        content_length = self.headers.get('Content-Length', None)
+        content = self.STREAM_CONTENT_NOT_LOGGED
+
+        if can_safely_log_content:
+            if content_length is None:
+                content_length = text_type(len(self.content))
+
+            if len(self.content) > MAX_LOGGED_RESPONSE_SIZE:
+                #print("DISABLING LOGGING, content is too large: %s" % content_length)
+                content = "<Content not logged (size=%s)>" % len(self.content)
+            else:
+                # If possible, get the content as a JSON `dict`, that way
+                # `pformat(content)` will return pretty-printed JSON.
+                try:
+                    content = self.json()
+                except ValueError:
+                    content = self.content
+                content = pformat(sanitize_dictionary(content))
+        if content_length is None:
+            content_length = '?'
+        if self.ok:
+            logger_method, response_format = self._logger.info, self.SUCCESSFUL_RESPONSE_FORMAT
+        else:
+            logger_method, response_format = self._logger.warning, self.ERROR_RESPONSE_FORMAT
+        logger_method(
+            response_format,
+            {
+                'method': self.request_response.request.method,
+                'url': self.request_response.request.url,
+                'status_code': self.status_code,
+                'content_length': content_length,
+                'headers': pformat(self.headers),
+                'content': content,
+            },
+        )
+
+# End of logging fixes
+############################
+
+
 class BoxComFSProvider(FSProvider):
     def __init__(self, root, config, client):
         """
@@ -24,12 +94,15 @@ class BoxComFSProvider(FSProvider):
             cache_file_name = hashlib.sha1(self.access_token.encode('utf-8')).hexdigest()
         else:
             cache_file_name = None
+
         auth = OAuth2(
             client_id="",
             client_secret="",
             access_token=self.access_token
         )
-        self.client = Client(auth)
+
+        main_session = AuthorizedSession(auth, network_layer=LessVerboseLoggingNetwork())
+        self.client = Client(auth, main_session)
         self.user = self.client.user().get()
         self.box_item = BoxItem(cache_file_name, root, self.client)
         self.box_item.check_path_format(get_normalized_path(root))
