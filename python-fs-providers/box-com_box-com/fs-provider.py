@@ -45,7 +45,6 @@ class LessVerboseLoggingNetworkResponse(DefaultNetworkResponse):
                 content_length = text_type(len(self.content))
 
             if len(self.content) > MAX_LOGGED_RESPONSE_SIZE:
-                #print("DISABLING LOGGING, content is too large: %s" % content_length)
                 content = "<Content not logged (size=%s)>" % len(self.content)
             else:
                 # If possible, get the content as a JSON `dict`, that way
