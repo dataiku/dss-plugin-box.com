@@ -11,11 +11,11 @@ plugin:
 	@cat plugin.json | json_pp > /dev/null
 	@rm -rf dist
 	@mkdir dist
-	@echo "{\"remote_url\":\"${remote_url}\",\"last_commit_id\":\"${last_commit_id}\"}" > release_info.json
-	@git archive -v -9 --format zip -o dist/${archive_file_name} HEAD
-	@zip --delete dist/${archive_file_name} "tests/*"
-	@zip -u dist/${archive_file_name} release_info.json
-	@rm release_info.json
+	@if [[ $(git status --porcelain | wc -l) -eq 0 ]]; then \
+		echo "{\"remote_url\":\"${remote_url}\",\"last_commit_id\":\"${last_commit_id}\"}" > release_info.json; \
+    fi
+	@zip -v -9 dist/${archive_file_name} -r . --exclude "tests/*"
+	@rm -f release_info.json
 	@echo "[SUCCESS] Archiving plugin to dist/ folder: Done!"
 
 unit-tests:
