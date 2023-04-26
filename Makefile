@@ -10,8 +10,8 @@ plugin:
 	@echo "[START] Archiving plugin to dist/ folder..."
 	@cat plugin.json | json_pp > /dev/null
 	@rm -rf dist
-	@if [[ $(git status --porcelain | wc -l) -eq 0 ]]; then \
-		echo "{\"remote_url\":\"${remote_url}\",\"last_commit_id\":\"${last_commit_id}\"}" > release_info.json; \
+	if [[ ! `git status --porcelain` ]]; then \
+		@echo "{\"remote_url\":\"${remote_url}\",\"last_commit_id\":\"${last_commit_id}\"}" > release_info.json; \
     fi
 	@mkdir dist
 	@zip -v -9 dist/${archive_file_name} -r . --exclude "tests/*"
