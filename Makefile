@@ -6,8 +6,7 @@ remote_url=`git config --get remote.origin.url`
 last_commit_id=`git rev-parse HEAD`
 
 
-dist-clean:
-	rm -rf dist
+.DEFAULT_GOAL := plugin
 
 plugin: dist-clean
 	@echo "[START] Archiving plugin to dist/ folder..."
@@ -60,3 +59,5 @@ integration-tests:
 
 tests: unit-tests integration-tests
 
+dist-clean:
+	rm -rf dist
