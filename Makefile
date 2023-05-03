@@ -21,13 +21,13 @@ plugin: dist-clean
 	@rm release_info.json
 	@echo "[SUCCESS] Archiving plugin to dist/ folder: Done!"
 
-dev:	dist-clean
+dev: dist-clean
 	@echo "[START] Archiving plugin to dist/ folder... (dev mode)"
 	@cat plugin.json | json_pp > /dev/null
 	@mkdir dist
-	@zip -v -9 dist/${archive_file_name} -r . --exclude "tests/*"
+	@zip -v -9 dist/${archive_file_name} -r . --exclude "tests/*" "env/*"
 	@echo "[SUCCESS] Archiving plugin to dist/ folder: Done!"
-
+	
 unit-tests:
 	@echo "Running unit tests..."
 	@( \
