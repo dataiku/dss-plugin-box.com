@@ -3,8 +3,6 @@
 - Add supported Python versions:
   - 3.8
   - 3.9
-  - 3.10
-  - 3.11
 -  Add `"corePackagesSet": "AUTO"` to plugin description
 
 ## Version 1.0.1 - Bugfix release - 2021/09
