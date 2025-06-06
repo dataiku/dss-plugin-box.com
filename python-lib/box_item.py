@@ -7,7 +7,7 @@ except ImportError:
 
 from datetime import datetime
 from cache_handler import CacheHandler
-from utils import get_full_path, get_rel_path, get_normalized_path
+from utils import get_full_path, get_rel_path, get_normalized_path, get_item_size
 from boxsdk.exception import BoxAPIException
 
 
@@ -48,7 +48,7 @@ class BoxItem():
                 self.path = rel_path
                 self.id = item_id
                 self.type = item_type
-                self.size = (item.size if self.is_file() else 0)
+                self.size = (get_item_size(item) if self.is_file() else 0)
                 return self
             except Exception as error:
                 logger.info("Exception:{}".format(error))
@@ -72,7 +72,7 @@ class BoxItem():
                     item_id = item.id
                     self.type = item.type
                     self.modified_at = self.format_date(item.modified_at)
-                    self.size = item.size
+                    self.size = get_item_size(item)
                     self.cache.add(current_path, item.id, item.type)
                     found = True
                     break
@@ -167,7 +167,7 @@ class BoxItem():
         children = []
         for sub in self.client.folder(self.id).get_items(fields = ['modified_at','name','type','size']):
             sub_path = get_normalized_path(os.path.join(internal_path, sub.name))
-            ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : sub.size, 'lastModified' : self.get_last_modified(sub)}
+            ret = {'fullPath' : sub_path, 'exists' : True, 'directory' : sub.type == self.BOX_FOLDER, 'size' : get_item_size(sub), 'lastModified' : self.get_last_modified(sub)}
             children.append(ret)
             self.cache.add(get_rel_path(sub.name), sub.id, sub.type)
         return children

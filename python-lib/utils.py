@@ -14,3 +14,11 @@ def get_full_path(root, path):
         return get_normalized_path(root)
     else:
         return get_normalized_path(root) + normalized_path
+
+
+def get_item_size(item):
+    # Some file types (links) don't have a size parameter.
+    if "size" in dir(item):
+        return item.size
+    else:
+        return 0

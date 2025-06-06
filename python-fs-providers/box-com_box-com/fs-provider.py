@@ -4,7 +4,7 @@ from boxsdk import OAuth2, Client
 import os, shutil, json, hashlib, logging
 
 from box_item import BoxItem
-from utils import get_full_path, get_rel_path, get_normalized_path
+from utils import get_full_path, get_rel_path, get_normalized_path, get_item_size
 
 
 # The DefaultNetwork of box.com logs all network queries and responses, INCLUDING CONTENT
@@ -160,7 +160,7 @@ class BoxComFSProvider(FSProvider):
         if item.is_folder():
             paths = self.list_recursive(normalized_path, item.id, first_non_empty)
         else:
-            paths.append({'path':normalized_path.split("/")[-1], 'size':item.size, 'lastModified':int(0) * 1000})
+            paths.append({'path':normalized_path.split("/")[-1], 'size':get_item_size(item), 'lastModified':int(0) * 1000})
         return paths
 
     def list_recursive(self, path, folder_id, first_non_empty):
@@ -171,7 +171,7 @@ class BoxComFSProvider(FSProvider):
             if child.type == self.box_item.BOX_FOLDER:
                 paths.extend(self.list_recursive(path + '/' + child.name, child.id, first_non_empty))
             else:
-                paths.append({'path':path + '/' + child.name, 'size':child.size})
+                paths.append({'path':path + '/' + child.name, 'size':get_item_size(child)})
                 if first_non_empty:
                     return paths
         return paths
