@@ -1,8 +1,13 @@
-import os, json, uuid, time, errno, logging
+import os
+import json
+import uuid
+import errno
+import logging
 from shutil import move
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,  # avoid getting log from 3rd party module
                     format='box-com plugin %(levelname)s - %(message)s')
+
 
 class CacheHandler():
     def __init__(self, cache_file_name):
@@ -21,7 +26,7 @@ class CacheHandler():
             with open(self.cache_location, "r") as file_handle:
                 self.cache = json.load(file_handle)
                 file_handle.close()
-        except Exception as error:
+        except Exception:
             self.cache = {}
 
     def reset(self):
@@ -46,12 +51,12 @@ class CacheHandler():
         except Exception as error:
             logger.error('Error while saving cache' + error)
 
-    def create_dir(self,filename):
+    def create_dir(self, filename):
         if not os.path.exists(os.path.dirname(filename)):
             try:
                 os.makedirs(os.path.dirname(filename))
                 return 1
-            except OSError as error: # Guard against race condition
+            except OSError as error:  # Guard against race condition
                 if error.errno != errno.EEXIST:
                     raise
                 logger.info("Error :" + error)
@@ -61,10 +66,10 @@ class CacheHandler():
     def add(self, path, item_id, item_type):
         if not self.cache_enabled:
             return
-        self.cache[path] = {"item_id":item_id, "item_type":item_type}
+        self.cache[path] = {"item_id": item_id, "item_type": item_type}
         self.write_onto_disk()
 
-    def query(self, path, force_no_cache = False):
+    def query(self, path, force_no_cache=False):
         if not self.cache_enabled or force_no_cache:
             return None, None
         if path in self.cache:
