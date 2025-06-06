@@ -1,3 +1,7 @@
+## Version 1.1.1 - Bugfix release - 2025/06
+
+- Fix listing of folders containing links
+
 ## Version 1.1.0 - Update release - 2023/04
 
 - Add supported Python versions:
