@@ -38,7 +38,7 @@ class LessVerboseLoggingNetworkResponse(DefaultNetworkResponse):
             return
         self._did_log = True
         content_length = self.headers.get('Content-Length', None)
-        content = self.STREAM_CONTENT_NOT_LOGGED
+        content = "<stream not logged>"
 
         if can_safely_log_content:
             if content_length is None:
