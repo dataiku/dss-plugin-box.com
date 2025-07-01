@@ -1,6 +1,14 @@
-## Version 1.1.1 - Bugfix release - 2025/06
+## Version 1.2.0 - Bugfix and update release - 2025/07
 
 - Fix listing of folders containing links
+- Add supported Python versions:
+  - 3.10
+  - 3.11
+  - 3.12
+- Remove unsupported Python versions:
+  - 2.7
+  - 3.5
+- Update package versions of `urllib3` and `boxsdk` for compatibility with the new Python versions
 
 ## Version 1.1.0 - Update release - 2023/04
 
