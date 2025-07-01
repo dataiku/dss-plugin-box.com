@@ -1,1 +1,2 @@
-boxsdk==2.5.0
+boxsdk==3.14.0
+urllib3==1.26.20
