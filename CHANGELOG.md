@@ -1,4 +1,4 @@
-## Version 1.2.0 - Update release - 2023/04
+## Version 1.2.0 - Update release - 2025/07
 
 - Add supported Python versions:
   - 3.10
