@@ -1,11 +1,18 @@
 from dataiku.fsprovider import FSProvider
 from boxsdk import OAuth2, Client
 
-import os, shutil, json, hashlib, logging
+import os
+import shutil
+import hashlib
 
 from box_item import BoxItem
-from utils import get_full_path, get_rel_path, get_normalized_path
+from utils import get_full_path, get_rel_path, get_normalized_path, get_item_size
 
+from boxsdk.network.default_network import DefaultNetwork, DefaultNetworkResponse
+from boxsdk.session.session import AuthorizedSession
+from six import text_type
+from pprint import pformat
+from boxsdk.util.log import sanitize_dictionary
 
 # The DefaultNetwork of box.com logs all network queries and responses, INCLUDING CONTENT
 # This is crazy but it is how it is, and it of course lead to incredible disk usage
@@ -21,16 +28,12 @@ from utils import get_full_path, get_rel_path, get_normalized_path
 # require rewrapping boxsdk.object.file, so looks more dangerous
 MAX_LOGGED_RESPONSE_SIZE = 2048
 
-from boxsdk.network.default_network import DefaultNetwork, DefaultNetworkResponse
-from boxsdk.session.session import AuthorizedSession
-from six import text_type
-from pprint import pformat
-from boxsdk.util.log import sanitize_dictionary
 
 class LessVerboseLoggingNetwork(DefaultNetwork):
     @property
     def network_response_constructor(self):
         return LessVerboseLoggingNetworkResponse
+
 
 class LessVerboseLoggingNetworkResponse(DefaultNetworkResponse):
     def log(self, can_safely_log_content=False):
@@ -137,16 +140,21 @@ class BoxComFSProvider(FSProvider):
         full_path = get_full_path(self.root, path)
         item = self.box_item.get_by_path(get_rel_path(full_path))
         if item.not_exists():
-            return {'fullPath' : normalized_path, 'exists' : False}
+            return {
+                'fullPath': normalized_path, 'exists': False
+            }
         if item.is_folder():
-            return {'fullPath' : normalized_path, 'exists' : True, 'directory' : True, 'children' : item.get_children(normalized_path), 'lastModified' : item.get_last_modified()}
+            return {
+                'fullPath': normalized_path, 'exists': True,
+                'directory': True, 'children': item.get_children(normalized_path),
+                'lastModified': item.get_last_modified()
+            }
         else:
             return item.get_as_browse()
-    
+
     def enumerate(self, path, first_non_empty):
         """
         Enumerate files recursively from prefix. If first_non_empty, stop at the first non-empty file.
-        
         If the prefix doesn't denote a file or folder, return None
         """
         full_path = get_full_path(self.root, path)
@@ -160,18 +168,22 @@ class BoxComFSProvider(FSProvider):
         if item.is_folder():
             paths = self.list_recursive(normalized_path, item.id, first_non_empty)
         else:
-            paths.append({'path':normalized_path.split("/")[-1], 'size':item.size, 'lastModified':int(0) * 1000})
+            paths.append({
+                'path': normalized_path.split("/")[-1], 'size': get_item_size(item), 'lastModified': int(0) * 1000
+            })
         return paths
 
     def list_recursive(self, path, folder_id, first_non_empty):
         paths = []
         if path == "/":
             path = ""
-        for child in self.client.folder(folder_id).get_items(fields = ['modified_at','name','type','size']):
+        for child in self.client.folder(folder_id).get_items(fields=['modified_at', 'name', 'type', 'size']):
             if child.type == self.box_item.BOX_FOLDER:
                 paths.extend(self.list_recursive(path + '/' + child.name, child.id, first_non_empty))
             else:
-                paths.append({'path':path + '/' + child.name, 'size':child.size})
+                paths.append({
+                    'path': path + '/' + child.name, 'size': get_item_size(child)
+                })
                 if first_non_empty:
                     return paths
         return paths
@@ -181,7 +193,7 @@ class BoxComFSProvider(FSProvider):
         Delete recursively from path. Return the number of deleted files (optional)
         """
         full_path = get_full_path(self.root, path)
-        item = self.box_item.get_by_path(full_path, force_no_cache = True)
+        item = self.box_item.get_by_path(full_path, force_no_cache=True)
         if item.not_exists():
             return 0
         else:
@@ -195,10 +207,10 @@ class BoxComFSProvider(FSProvider):
         """
         full_from_path = get_full_path(self.root, from_path)
         full_to_path = get_full_path(self.root, to_path)
-        from_base, from_item_name = os.path.split(full_from_path)
+        _, from_item_name = os.path.split(full_from_path)
         to_base, to_item_name = os.path.split(full_to_path)
 
-        from_item = self.box_item.get_by_path(full_from_path, force_no_cache = True)
+        from_item = self.box_item.get_by_path(full_from_path, force_no_cache=True)
 
         if from_item.not_exists():
             return False
@@ -206,9 +218,9 @@ class BoxComFSProvider(FSProvider):
         from_item_id = from_item.get_id()
         from_item_is_folder = from_item.is_folder()
 
-        to_item =  self.box_item.get_by_path(full_to_path, force_no_cache = True)
+        to_item = self.box_item.get_by_path(full_to_path, force_no_cache=True)
         if to_item.not_exists():
-            to_item =  self.box_item.get_by_path(to_base, force_no_cache = True)
+            to_item = self.box_item.get_by_path(to_base, force_no_cache=True)
 
         destination_folder = self.client.folder(to_item.get_id())
 
@@ -228,7 +240,7 @@ class BoxComFSProvider(FSProvider):
         full_path = get_full_path(self.root, path)
         byte_range = None
 
-        if limit is not None and limit is not "-1":
+        if limit is not None and limit != "-1":
             int_limit = int(limit)
             if int_limit > 0:
                 byte_range = (0, int(limit) - 1)
@@ -243,7 +255,7 @@ class BoxComFSProvider(FSProvider):
         Write the stream to the object denoted by path into the stream
         """
         full_path = get_full_path(self.root, path)
-        item = self.box_item.create_path(full_path, force_no_cache = True)
+        item = self.box_item.create_path(full_path, force_no_cache=True)
         if item.is_folder():
             item.write_stream(stream)
         else:

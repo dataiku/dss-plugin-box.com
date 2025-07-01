@@ -1,5 +1,6 @@
-## Version 1.2.0 - Update release - 2025/07
+## Version 1.2.0 - Bugfix and update release - 2025/07
 
+- Fix listing of folders containing links
 - Add supported Python versions:
   - 3.10
   - 3.11
