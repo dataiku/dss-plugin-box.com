@@ -1,9 +1,6 @@
 ## Version 1.3.0 - Bugfix release - 2026/01
 
-- Updates urllib3 version from 1.26.20 to:
-  - 2.6.0 to fix vulnerabilities for Python versions >= 3.9
-  - 2.0.7 for Python 3.7
-  - 2.2.3 for Python 3.8
+- Removes urllib3 requirement. urllib3 is installed by boxsdk requirements taking the last available version.
 
 ## Version 1.2.0 - Bugfix and update release - 2025/07
 
