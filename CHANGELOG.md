@@ -1,3 +1,9 @@
+## Version 1.2.1 - Bugfix release - 2026/01
+
+- Removes urllib3 requirement. urllib3 is installed by boxsdk requirements taking the last available version.
+- Updates meta tags to ["Connector", "Productivity"]
+- Updates meta category to "Productivity"
+
 ## Version 1.2.0 - Bugfix and update release - 2025/07
 
 - Fix listing of folders containing links
@@ -19,7 +25,7 @@
 
 ## Version 1.0.1 - Bugfix release - 2021/09
 
-* Fix excessive loggingn of files content
+* Fix excessive logging of files content
 
 ## Version 1.0.0 - Initial release - 2020/01
 
