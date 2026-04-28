@@ -1,3 +1,7 @@
+## Version 1.3.0 - Feature release - 2026/04
+
+- Adding OAuth preset for SSO authentication
+
 ## Version 1.2.1 - Bugfix release - 2026/01
 
 - Removes urllib3 requirement. urllib3 is installed by boxsdk requirements taking the last available version.
