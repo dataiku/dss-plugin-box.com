@@ -4,8 +4,8 @@
         "description": "",
         "icon": "icon-cloud"
     },
-    "defaultDefinableInline": true,
-    "defaultDefinableAtProjectLevel": true,
+    "defaultDefinableInline": false,
+    "defaultDefinableAtProjectLevel": false,
     "pluginParams": [],
     "params": [
         {
@@ -18,7 +18,8 @@
                 "oauth2Provider": "AZURE",
                 "authorizationEndpoint": "https://account.box.com/api/oauth2/authorize",
                 "tokenEndpoint": "https://api.box.com/oauth2/token",
-                "scope": "root_readwrite"
+                "scope": "root_readwrite",
+                "refreshTokenRotation": true
             }
         }
     ]
