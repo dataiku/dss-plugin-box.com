@@ -1,6 +1,6 @@
 {
     "id": "box-com",
-    "version": "1.2.1",
+    "version": "1.3.0",
     "meta": {
         "label": "Box.com",
         "description": "Read and write data from/to your Box.com account",
@@ -8,7 +8,7 @@
         "icon": "icon-cloud",
         "category": "Productivity",
         "tags": ["Connector", "Productivity"],
-        "url": "https://www.dataiku.com/product/plugins/box-com/",
+        "url": "https://doc.dataiku.com/dss/latest/connecting/application-connectors/box-com.html",
         "licenseInfo": "Apache Software License",
         "supportLevel": "NOT_SUPPORTED"
     }

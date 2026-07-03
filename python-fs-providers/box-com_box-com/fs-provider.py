@@ -89,8 +89,12 @@ class BoxComFSProvider(FSProvider):
         if len(root) > 0 and root[0] == '/':
             root = root[1:]
         self.root = root
-        self.connection = client.get("box_com_connection")
-        self.access_token = self.connection['access_token']
+        self.connection = client.get("box_com_connection", {})
+        self.auth_type = config.get("auth_type", "token")
+        if self.auth_type == "oauth":
+            self.access_token = config.get("oauth_login", {}).get("boxcom_oauth")
+        else:
+            self.access_token = self.connection.get("access_token")
         self.cache_enabled = config.get("cache_enabled")
         if self.cache_enabled:
             cache_file_name = hashlib.sha1(self.access_token.encode('utf-8')).hexdigest()
