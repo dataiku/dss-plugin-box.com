@@ -1,3 +1,7 @@
+## Version 1.4.0 - Enhancement release - 2026-07-20
+
+- Added supported Python versions: 3.13, 3.14
+
 ## Version 1.3.0 - Feature release - 2026/04
 
 - Adding OAuth preset for SSO authentication
