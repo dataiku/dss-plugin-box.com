@@ -1,3 +1,8 @@
+## Version 1.4.0 - Enhancement release - 2026-10-12
+
+- Added supported Python versions: 3.13, 3.14
+- Makefile cleanup: release_info.json lines removed
+
 ## Version 1.3.0 - Feature release - 2026/04
 
 - Adding OAuth preset for SSO authentication
